@@ -3,7 +3,7 @@
  *
  * <p>하위 패키지 구성 (자세한 내용은 README의 <b>프로젝트 구조</b> 절 참고)
  * <ul>
- *   <li>{@code model}   — 데이터를 담는 클래스 (도메인 모델)</li>
+ *   <li>{@code dto}     — 계층 사이로 데이터를 옮기는 클래스</li>
  *   <li>{@code dao}     — DB 접근 (JDBC)</li>
  *   <li>{@code service} — 비즈니스 로직 (인증·추천·알레르기·그룹·지도)</li>
  *   <li>{@code network} — 소켓 통신 (그룹 실시간 기능)</li>

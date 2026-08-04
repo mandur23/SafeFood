@@ -10,6 +10,9 @@
  *   <li>{@code HistoryDao}    — 히스토리·즐겨찾기·피드백</li>
  * </ul>
  *
+ * <p>조회 결과는 {@code com.foodmate.dto}의 클래스에 담아 돌려줍니다.
+ * {@code ResultSet}을 그대로 밖으로 내보내지 마세요. (커넥션이 닫히면 못 읽습니다)
+ *
  * <p>접속 정보는 {@code src/config.properties}에서 읽습니다. 코드에 직접 적지 마세요.
  * 값을 SQL에 넣을 때는 문자열을 이어 붙이지 말고 {@code PreparedStatement}의 {@code ?}를 씁니다.
  */
