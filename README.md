@@ -274,7 +274,7 @@ CREATE TABLE user_category (
 -- 알레르기 목록 (공통 마스터)
 CREATE TABLE allergy (
     id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(30) NOT NULL UNIQUE            -- 우유 / 땅콩 / 갑각류 / 계란 ...
+    name VARCHAR(50) NOT NULL UNIQUE            -- 우유 / 땅콩 / 갑각류 / 계란 ...
 );
 
 -- 회원별 보유 알레르기
