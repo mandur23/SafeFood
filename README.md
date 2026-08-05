@@ -123,7 +123,7 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 ```
 FoodMate/
 ├── src/
-│   ├── Main.java                      # 진입점 (엔트리 포인트)
+│   ├── main.java                      # 진입점 (엔트리 포인트)
 │   ├── config.properties              # 개인 설정 — 커밋 금지 (Setup Wizard가 생성)
 │   ├── com/foodmate/
 │   │   ├── dto/                       # UserDto, MenuDto, RestaurantDto ...
@@ -219,10 +219,10 @@ socket.port=5000
 
 ```bash
 # 컴파일
-javac -encoding UTF-8 -d out src/Main.java
+javac -encoding UTF-8 -d out src/main.java
 
 # 실행 (JDBC 드라이버 경로를 클래스패스에 포함)
-java -cp "out;lib/mysql-connector-j.jar" Main
+java -cp "out;lib/mysql-connector-j.jar" main
 ```
 
 그룹 추천은 **방장이 방을 만들면 그 앱이 곧 서버**라서, 서버를 따로 켜지 않습니다.
@@ -230,10 +230,10 @@ java -cp "out;lib/mysql-connector-j.jar" Main
 
 ```bash
 # 참여자 수만큼 여러 개 띄웁니다 (한 명이 방장, 나머지는 참여자)
-java -cp "out;lib/mysql-connector-j.jar" Main
+java -cp "out;lib/mysql-connector-j.jar" main
 ```
 
-> IntelliJ에서는 `Main.java`의 `main` 메서드 옆 ▶ 버튼으로 바로 실행할 수 있습니다.
+> IntelliJ에서는 `main.java`의 `main` 메서드 옆 ▶ 버튼으로 바로 실행할 수 있습니다.
 > 클라이언트를 **여러 개 동시에** 띄우려면 실행 구성(Run/Debug Configurations)에서
 > `Modify options → Allow multiple instances`를 체크하세요.
 > <!-- 웹/GUI로 결정되면 이 부분을 해당 실행 방법으로 교체하세요 -->
