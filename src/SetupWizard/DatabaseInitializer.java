@@ -27,21 +27,11 @@ final class DatabaseInitializer {
     }
 
     /**
-     * MySQL Connector/J가 클래스패스에 있는지 확인합니다.
-     * JDBC 4.0부터는 자동 등록이라 Class.forName이 필수는 아니지만,
-     * "드라이버가 없다"는 사실을 미리 알려 주려고 명시적으로 확인합니다.
+     * MySQL Connector/J를 쓸 수 있는지 확인합니다.
+     * 실제 설치·로드는 {@link JdbcDriverSetup#ensureReady}가 담당합니다.
      */
     static boolean loadDriver() {
-        String[] candidates = {"com.mysql.cj.jdbc.Driver", "com.mysql.jdbc.Driver"};
-        for (String name : candidates) {
-            try {
-                Class.forName(name);
-                return true;
-            } catch (ClassNotFoundException ignored) {
-                // 다음 후보 이름으로 재시도
-            }
-        }
-        return false;
+        return JdbcDriverSetup.isReady();
     }
 
     /** 데이터베이스가 아직 없어도 되도록, 서버에만 붙어서 연결을 확인합니다. */

@@ -1,3 +1,4 @@
+import SetupWizard.SetupWizard;
 import com.foodmate.view.mainGUI;
 
 public class main {
