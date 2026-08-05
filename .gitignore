@@ -32,3 +32,7 @@ bin/
 ### FoodMate ###
 # 개인 DB 계정·API 키가 들어 있는 파일 (공유용 예시는 .example)
 src/config.properties
+
+# DB 미사용: private = 개인·팀 서버 데이터 (public = 앱 공통 데이터, 커밋 가능)
+data/private/
+!data/private/.gitkeep
