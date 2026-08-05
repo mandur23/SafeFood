@@ -27,8 +27,8 @@ MySQL 접속 확인부터 DB·테이블 생성, 기본 데이터 삽입, `config
 
 `SetupWizard.java`를 열고 `main` 메서드 옆 ▶ 버튼을 누르면 됩니다.
 
-Connector/J가 아직 없다면(DB를 쓸 예정일 때) 먼저 등록하세요.
-`File → Project Structure → Libraries → + → Java →` 내려받은 `mysql-connector-j-x.x.x.jar` 선택
+Connector/J가 없으면 마법사가 Maven Central에서 `lib/`로 받은 뒤 이번 실행에 바로 쓰고,
+가능하면 `SafeFood.iml`에도 등록합니다. 네트워크가 안 되면 설정 파일만 만드는 쪽으로 이어갑니다.
 
 ### 터미널에서
 
@@ -50,7 +50,7 @@ java -Dstdout.encoding=UTF-8 -cp "out;lib/mysql-connector-j.jar" SetupWizard.Set
 
 | 단계 | 내용 | 실패하면 |
 |------|------|----------|
-| 1 | JDBC 드라이버 확인 | 설치 방법 안내 후, 설정 파일만 만들지 선택 |
+| 1 | JDBC 드라이버 확인·자동 설치 | 실패 시 설정 파일만 만들지 선택 |
 | 2 | 접속 정보 입력 → 연결 테스트 | 원인을 한글로 안내하고 재입력 / DB 건너뛰기 |
 | 3 | `CREATE DATABASE foodmate` | 이후 DB 단계 건너뛰고 `data/` 모드로 진행 |
 | 4 | 테이블 18개 생성 | 이후 DB 단계 건너뜀 |
