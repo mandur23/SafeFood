@@ -10,7 +10,7 @@ import java.sql.SQLException;
  *
  * <p>저장소를 클론한 팀원이 <b>한 번 실행</b>하면 아래 작업을 순서대로 처리합니다.
  * <ol>
- *   <li>JDBC 드라이버 확인</li>
+ *   <li>JDBC 드라이버 확인 (없으면 lib/에 자동 다운로드·적용)</li>
  *   <li>MySQL 접속 정보 입력 및 연결 테스트</li>
  *   <li>데이터베이스 생성</li>
  *   <li>테이블 생성</li>
@@ -32,6 +32,7 @@ public final class SetupWizard {
     private static final int DEFAULT_SOCKET_PORT = 5000;
 
     private SetupWizard() {
+
     }
 
     public static void main(String[] args) {
@@ -56,11 +57,11 @@ public final class SetupWizard {
         Ui.blank();
         Ui.info("프로젝트 경로: " + projectRoot);
 
-        // [1/6] 드라이버가 없으면 DB 작업은 못 하지만 설정 파일은 만들어 둘 수 있습니다.
-        DriverState driverState = checkDriver();
+        // [1/6] 없으면 lib/에 받고 런타임·IntelliJ 모듈에 자동 적용. 실패 시 설정 파일만 가능.
+        DriverState driverState = checkDriver(projectRoot);
         if (driverState == DriverState.ABORT) {
             Ui.blank();
-            Ui.info("마법사를 종료합니다. 드라이버를 추가한 뒤 다시 실행해 주세요.");
+            Ui.info("마법사를 종료합니다. 네트워크를 확인하거나 jar를 lib/에 넣은 뒤 다시 실행해 주세요.");
             return;
         }
 
@@ -131,17 +132,15 @@ public final class SetupWizard {
         ABORT
     }
 
-    private static DriverState checkDriver() {
+    private static DriverState checkDriver(Path projectRoot) {
         Ui.step(1, TOTAL_STEPS, "JDBC 드라이버 확인");
-        if (DatabaseInitializer.loadDriver()) {
-            Ui.ok("MySQL Connector/J 확인 완료");
+        if (JdbcDriverSetup.ensureReady(projectRoot)) {
             return DriverState.READY;
         }
 
-        Ui.fail("MySQL Connector/J를 클래스패스에서 찾지 못했습니다.");
-        Ui.detail("1) dev.mysql.com/downloads/connector/j 에서 Platform Independent 버전을 받습니다.");
-        Ui.detail("2) 압축을 풀어 나온 mysql-connector-j-x.x.x.jar를 프로젝트 lib 폴더에 넣습니다.");
-        Ui.detail("3) IntelliJ: File > Project Structure > Libraries > + > Java > 해당 jar 선택");
+        Ui.blank();
+        Ui.warn("자동 설치에 실패했습니다. 수동으로 lib/에 jar를 넣거나 네트워크를 확인하세요.");
+        Ui.detail("https://dev.mysql.com/downloads/connector/j/ (Platform Independent)");
         Ui.blank();
 
         boolean configOnly = Ui.confirm("지금은 설정 파일만 만들까요? (n = 마법사 종료)", true);

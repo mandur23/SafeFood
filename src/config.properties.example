@@ -1,0 +1,13 @@
+# FoodMate 설정 파일 예시 (이 파일은 커밋해도 됩니다)
+#
+# 이 파일을 config.properties로 복사한 뒤 본인 환경에 맞게 채우거나,
+# SetupWizard를 실행하면 자동으로 만들어집니다.
+
+db.url=jdbc:mysql://localhost:3306/Safefood?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+db.user=
+db.password=
+
+map.api.key=
+
+socket.host=localhost
+socket.port=5000
