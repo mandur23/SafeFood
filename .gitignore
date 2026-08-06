@@ -36,3 +36,5 @@ src/config.properties
 # DB 미사용: private = 개인·팀 서버 데이터 (public = 앱 공통 데이터, 커밋 가능)
 data/private/
 !data/private/.gitkeep
+
+.claude
