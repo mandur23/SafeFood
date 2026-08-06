@@ -15,7 +15,7 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 
 | 이름 | 역할 | 담당                    |
 |------|------|-----------------------|
-| 김민수 | 조장 | 소켓 통신 및 팀관련, 전반적인 부분|
+    | 김민수 | 조장 | 소켓 통신 및 팀관련, 전반적인 부분|
 | 길동현 | 조원 | 계정온보딩 기록,지도|
 | 조영준 | 조원 | 개인 추천 및 알레르기, 조건|
 
@@ -123,7 +123,7 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 ```
 FoodMate/
 ├── src/
-│   ├── main.java                      # 진입점 (엔트리 포인트)
+│   ├── Main.java                      # 진입점 (엔트리 포인트)
 │   ├── config.properties              # 개인 설정 — 커밋 금지 (Setup Wizard가 생성)
 │   ├── com/foodmate/
 │   │   ├── dto/                       # UserDto, MenuDto, RestaurantDto ...
@@ -250,13 +250,13 @@ socket.port=5000
 
 ```bash
 # 컴파일
-javac -encoding UTF-8 -d out src/main.java
+javac -encoding UTF-8 -d out src/Main.java
 
 # 실행 (MySQL 사용 시 JDBC 드라이버를 클래스패스에 포함)
-java -cp "out;lib/mysql-connector-j.jar" main
+java -cp "out;lib/mysql-connector-j.jar" Main
 
 # data/만 쓸 때는 드라이버 없이 실행해도 됩니다
-# java -cp out main
+# java -cp out Main
 ```
 
 그룹 추천은 **방장이 방을 만들면 그 앱이 곧 서버**라서, 서버를 따로 켜지 않습니다.
@@ -265,10 +265,10 @@ java -cp "out;lib/mysql-connector-j.jar" main
 
 ```bash
 # 참여자 수만큼 여러 개 띄웁니다 (한 명이 방장, 나머지는 참여자)
-java -cp "out;lib/mysql-connector-j.jar" main
+java -cp "out;lib/mysql-connector-j.jar" Main
 ```
 
-> IntelliJ에서는 `main.java`의 `main` 메서드 옆 ▶ 버튼으로 바로 실행할 수 있습니다.
+> IntelliJ에서는 `Main.java`의 `Main` 메서드 옆 ▶ 버튼으로 바로 실행할 수 있습니다.
 > 클라이언트를 **여러 개 동시에** 띄우려면 실행 구성(Run/Debug Configurations)에서
 > `Modify options → Allow multiple instances`를 체크하세요.
 > <!-- 웹/GUI로 결정되면 이 부분을 해당 실행 방법으로 교체하세요 -->
@@ -663,7 +663,7 @@ CREATE TABLE feedback (
 
 | 브랜치 | 용도 |
 |--------|------|
-| `main` | 최종 완성 코드 (직접 커밋 금지) |
+| `Main` | 최종 완성 코드 (직접 커밋 금지) |
 | `dev` | 개발 통합 브랜치 |
 | `feature/기능명` | 기능별 작업 브랜치 |
 

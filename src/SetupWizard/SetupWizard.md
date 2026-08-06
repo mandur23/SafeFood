@@ -25,7 +25,7 @@ MySQL 접속 확인부터 DB·테이블 생성, 기본 데이터 삽입, `config
 
 ### IntelliJ에서 (권장)
 
-`SetupWizard.java`를 열고 `main` 메서드 옆 ▶ 버튼을 누르면 됩니다.
+`SetupWizard.java`를 열고 `Main` 메서드 옆 ▶ 버튼을 누르면 됩니다.
 
 Connector/J가 없으면 마법사가 Maven Central에서 `lib/`로 받은 뒤 이번 실행에 바로 쓰고,
 가능하면 `SafeFood.iml`에도 등록합니다. 네트워크가 안 되면 설정 파일만 만드는 쪽으로 이어갑니다.
