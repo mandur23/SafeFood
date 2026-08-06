@@ -25,7 +25,7 @@ final class Ui {
     static void banner() {
         System.out.println();
         System.out.println("=============================================");
-        System.out.println("   FoodMate 개발 환경 설정 마법사");
+        System.out.println("   SafeFood 개발 환경 설정 마법사");
         System.out.println("=============================================");
         System.out.println("  MySQL 연결 → DB·테이블 생성 → 설정 파일 작성을 한 번에 처리합니다.");
         System.out.println("  대괄호 [] 안이 기본값입니다. 그냥 Enter를 누르면 기본값이 쓰입니다.");

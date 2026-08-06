@@ -65,7 +65,7 @@ final class ConfigFileWriter {
 
         String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         String content = """
-                # FoodMate 로컬 설정 파일
+                # Safefood 로컬 설정 파일
                 # Setup Wizard가 %s에 생성했습니다.
                 #
                 # !! 이 파일에는 개인 계정 정보가 들어 있습니다. 절대 커밋하지 마세요.
