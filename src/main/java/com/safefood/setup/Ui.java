@@ -1,5 +1,8 @@
 package com.safefood.setup;
 
+import com.safefood.setup.core.SetupReporter;
+import com.safefood.setup.core.SetupService;
+
 import java.io.Console;
 import java.util.Scanner;
 
@@ -8,6 +11,10 @@ import java.util.Scanner;
  *
  * <p>IntelliJ 실행창에서는 {@link System#console()}이 null이라 비밀번호를 가려서 받을 수 없습니다.
  * 그래서 콘솔이 없으면 Scanner로 대체하고, 입력이 화면에 보인다는 사실을 미리 알려 줍니다.
+ *
+ * <p>출력 쪽은 {@link #reporter()}로 {@link SetupReporter} 형태로도 꺼내 쓸 수 있습니다.
+ * 처리 담당 클래스({@link SetupService} 등)는 이 인터페이스만 알기 때문에,
+ * 같은 로직을 JavaFX 화면({@link SetupWizardFx})에서도 그대로 씁니다.
  */
 final class Ui {
 
@@ -17,7 +24,44 @@ final class Ui {
     private static final Scanner SCANNER = new Scanner(System.in);
     private static final Console CONSOLE = System.console();
 
+    /** 처리 담당 클래스에 넘겨 줄 출력 창구. 아래 static 메서드로 그대로 이어집니다. */
+    private static final SetupReporter REPORTER = new SetupReporter() {
+        @Override
+        public void step(int number, int total, String title) {
+            Ui.step(number, total, title);
+        }
+
+        @Override
+        public void ok(String message) {
+            Ui.ok(message);
+        }
+
+        @Override
+        public void warn(String message) {
+            Ui.warn(message);
+        }
+
+        @Override
+        public void fail(String message) {
+            Ui.fail(message);
+        }
+
+        @Override
+        public void info(String message) {
+            Ui.info(message);
+        }
+
+        @Override
+        public void detail(String message) {
+            Ui.detail(message);
+        }
+    };
+
     private Ui() {
+    }
+
+    static SetupReporter reporter() {
+        return REPORTER;
     }
 
     // ── 출력 ─────────────────────────────────────────────
@@ -30,6 +74,8 @@ final class Ui {
         System.out.println("  MySQL 연결 → DB·테이블 생성 → 설정 파일 작성을 한 번에 처리합니다.");
         System.out.println("  대괄호 [] 안이 기본값입니다. 그냥 Enter를 누르면 기본값이 쓰입니다.");
         System.out.println("  여러 번 실행해도 안전합니다. 이미 있는 것은 건너뜁니다.");
+        System.out.println();
+        System.out.println("  창으로 된 화면을 쓰려면: mvn javafx:run -Pwizard-fx");
     }
 
     static void step(int number, int total, String title) {

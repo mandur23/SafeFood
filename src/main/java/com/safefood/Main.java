@@ -1,9 +1,9 @@
 package com.safefood;
 
-import com.safefood.view.MainGui;
+import com.safefood.view.MainUi;
 
 public class Main {
     public static void main(String[] args) {
-        MainGui ui = new MainGui();
+        MainUi ui = new MainUi();
     }
 }

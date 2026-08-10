@@ -15,7 +15,7 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 
 | 이름 | 역할 | 담당                    |
 |------|------|-----------------------|
-    | 김민수 | 조장 | 소켓 통신 및 팀관련, 전반적인 부분|
+| 김민수 | 조장 | 소켓 통신 및 팀관련, 전반적인 부분|
 | 길동현 | 조원 | 계정온보딩 기록,지도|
 | 조영준 | 조원 | 개인 추천 및 알레르기, 조건|
 
@@ -147,6 +147,11 @@ SafeFood/
 │   │   │   │   └── Message                # 프로토콜 메시지 (타입 + 본문) 파싱·생성
 │   │   │   ├── view/                      # 화면 출력 / 입력 처리
 │   │   │   └── setup/                     # 개발 환경 설정 마법사 (DB·data/·설정 파일 자동 준비)
+│   │   │       ├── SetupWizardFx          # 창(JavaFX) 화면 — mvn javafx:run -Pwizard-fx
+│   │   │       ├── SetupWizardFxLauncher  # 창 화면의 IntelliJ ▶ 실행용 시작 클래스
+│   │   │       ├── SetupWizard            # 콘솔 화면 — mvn compile exec:java -Pwizard
+│   │   │       ├── Ui                     # 콘솔 출력·입력
+│   │   │       └── core/                  # 화면 없이 도는 처리부 (두 화면이 공유)
 │   │   └── resources/                     # 빌드 시 target/classes로 복사되는 리소스
 │   └── test/
 │       └── java/com/safefood/             # 테스트 코드 (JUnit 5)
@@ -226,11 +231,15 @@ mvn clean compile
 > ⚡ **3~4단계는 [Setup Wizard](docs/SetupWizard.md)로 자동 처리할 수 있습니다.**
 >
 > ```bash
-> mvn compile exec:java -Pwizard
+> mvn javafx:run -Pwizard-fx
 > ```
 >
+> 창으로 된 화면입니다. 터미널만 쓰고 싶다면 `mvn compile exec:java -Pwizard`도 같은 일을 합니다.
 > DB(또는 `data/`) 준비부터 `config.properties` 작성까지 한 번에 끝납니다.
-> IntelliJ에서는 `src/main/java/com/safefood/setup/SetupWizard.java`를 열고 ▶ 버튼을 눌러도 됩니다.
+> IntelliJ에서는 `src/main/java/com/safefood/setup/SetupWizardFxLauncher.java`(창) 또는
+> `SetupWizard.java`(콘솔)를 열고 ▶ 버튼을 눌러도 됩니다.
+> (창 화면을 ▶로 실행할 때 `SetupWizardFx`가 아니라 **Launcher**를 눌러야 하는 이유는
+> [SetupWizard.md](docs/SetupWizard.md#-실행-방법)에 적어 뒀습니다.)
 > 아래 3~4단계는 **직접 하고 싶거나, 무엇이 만들어지는지 확인하고 싶을 때** 참고하세요.
 
 ### 3. 데이터 저장소 준비
@@ -306,7 +315,8 @@ java -cp "target/classes;$(cat cp.txt)" com.safefood.Main
 | `mvn test` | `src/test/java` 테스트 실행 |
 | `mvn package` | JAR 생성 → `target/safefood.jar` |
 | `mvn compile exec:java` | 앱 실행 (`com.safefood.Main`) |
-| `mvn compile exec:java -Pwizard` | Setup Wizard 실행 |
+| `mvn javafx:run -Pwizard-fx` | Setup Wizard 실행 (창) |
+| `mvn compile exec:java -Pwizard` | Setup Wizard 실행 (콘솔) |
 
 그룹 추천은 **방장이 방을 만들면 그 앱이 곧 서버**라서, 서버를 따로 켜지 않습니다.
 같은 앱을 인원수만큼 띄우고 한 명이 방을 만들면, 나머지는 그 주소로 참여하면 됩니다.
@@ -743,7 +753,7 @@ CREATE TABLE feedback (
 
 - [x] 프로젝트 생성 및 저장소 세팅
 - [x] 기능 목록 정리
-- [x] 개발 환경 설정 마법사 작성 (`com.safefood.setup`)
+- [x] 개발 환경 설정 마법사 작성 (`com.safefood.setup`) — 콘솔 + JavaFX 창
 - [x] 패키지 구조 만들기 (`com.safefood`)
 - [ ] 애플리케이션 형태(웹 / GUI) 결정
 - [ ] 기능 우선순위 확정 (MVP 범위 정하기)

@@ -1,4 +1,4 @@
-package com.safefood.setup;
+package com.safefood.setup.core;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,38 +13,38 @@ import java.util.List;
  *
  * <p>연결 테스트 → 데이터베이스 생성 → 테이블 생성 → 기본 데이터 삽입 순서로 쓰입니다.
  * 모든 단계가 <b>여러 번 실행해도 안전(멱등)</b>하도록 작성했습니다.
+ *
+ * <p>진행 상황은 {@link SetupReporter}로만 알립니다. {@code System.out}을 직접 쓰지 않으므로
+ * 콘솔·JavaFX 어느 화면에서도 그대로 쓸 수 있습니다.
  */
-final class DatabaseInitializer {
+public final class DatabaseInitializer {
 
     /** 작업 결과 (처리한 개수 / 이미 있어서 건너뛴 개수) */
     record Result(int done, int skipped) {
     }
 
     private final DbConfig config;
+    private final SetupReporter out;
 
-    DatabaseInitializer(DbConfig config) {
+    public DatabaseInitializer(DbConfig config, SetupReporter out) {
         this.config = config;
+        this.out = out;
     }
 
     /**
-     * MySQL Connector/J를 쓸 수 있는지 확인합니다.
-     * 실제 설치·로드는 {@link JdbcDriverSetup#ensureReady}가 담당합니다.
+     * 데이터베이스가 아직 없어도 되도록, 서버에만 붙어서 연결을 확인합니다.
+     * 화면의 2단계(연결 테스트)에서 부릅니다.
      */
-    static boolean loadDriver() {
-        return JdbcDriverSetup.isReady();
-    }
-
-    /** 데이터베이스가 아직 없어도 되도록, 서버에만 붙어서 연결을 확인합니다. */
-    void testConnection() throws SQLException {
+    public void testConnection() throws SQLException {
         try (Connection connection = DriverManager.getConnection(
                 config.serverUrl(), config.user(), config.password())) {
-            Ui.detail("MySQL 버전: " + connection.getMetaData().getDatabaseProductVersion());
+            out.detail("MySQL 버전: " + connection.getMetaData().getDatabaseProductVersion());
         }
     }
 
     /** 데이터베이스 생성. 이미 있으면 아무 일도 하지 않습니다. */
     void createDatabase() throws SQLException {
-        // 이름은 Ui.askIdentifier에서 영문·숫자·밑줄만 통과시켰습니다.
+        // 이름은 화면(Ui.askIdentifier / SetupWizardFx)에서 영문·숫자·밑줄만 통과시켰습니다.
         // (식별자는 PreparedStatement의 ? 로 넘길 수 없어 직접 이어 붙여야 하므로 검사가 필수입니다)
         String sql = "CREATE DATABASE IF NOT EXISTS `" + config.database() + "` "
                 + "DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
@@ -73,7 +73,7 @@ final class DatabaseInitializer {
                     skipped++;
                 } else {
                     created++;
-                    Ui.detail("+ " + table.name());
+                    out.detail("+ " + table.name());
                 }
             }
         }
@@ -91,8 +91,8 @@ final class DatabaseInitializer {
             int allergies = insertNames(connection, "allergy", Schema.ALLERGIES);
             int moods = insertNames(connection, "mood", Schema.MOODS);
 
-            Ui.detail("알레르기 " + allergies + "건 추가 (전체 " + Schema.ALLERGIES.size() + "건)");
-            Ui.detail("기분 태그 " + moods + "건 추가 (전체 " + Schema.MOODS.size() + "건)");
+            out.detail("알레르기 " + allergies + "건 추가 (전체 " + Schema.ALLERGIES.size() + "건)");
+            out.detail("기분 태그 " + moods + "건 추가 (전체 " + Schema.MOODS.size() + "건)");
 
             int total = Schema.ALLERGIES.size() + Schema.MOODS.size();
             int inserted = allergies + moods;
@@ -121,7 +121,7 @@ final class DatabaseInitializer {
     }
 
     /** SQLException을 팀원이 바로 조치할 수 있는 한글 안내로 바꿔 줍니다. */
-    static String explain(SQLException e) {
+    public static String explain(SQLException e) {
         String sqlState = e.getSQLState() == null ? "" : e.getSQLState();
         if (sqlState.startsWith("08")) {
             return "MySQL 서버에 연결하지 못했습니다. 서버가 켜져 있는지, 호스트·포트가 맞는지 확인하세요.";

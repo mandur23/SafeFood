@@ -82,22 +82,21 @@
                 </configuration>
             </plugin>
 
-            <!-- mvn javafx:run 으로 GUI 실행.
-                 ⚠️ 아래 mainClass는 javafx.application.Application을 상속해야 동작합니다.
-                    MainGui가 아직 빈 클래스라, GUI를 만들기 전에는 이 명령이 실패합니다. -->
+            <!-- mvn javafx:run 으로 GUI 실행 (JavaFX 모듈 경로를 플러그인이 알아서 잡아 줍니다).
+                 mainClass는 javafx.application.Application을 상속한 클래스여야 합니다. -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>${javafx.plugin.version}</version>
                 <configuration>
-                    <mainClass>com.safefood.view.MainGui</mainClass>
+                    <mainClass>com.safefood.view.LoadingFX</mainClass>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
-        <!-- 개발 환경 설정 마법사: mvn compile exec:java -Pwizard -->
+        <!-- 개발 환경 설정 마법사 (콘솔): mvn compile exec:java -Pwizard -->
         <profile>
             <id>wizard</id>
             <build>
@@ -107,6 +106,23 @@
                         <artifactId>exec-maven-plugin</artifactId>
                         <configuration>
                             <mainClass>com.safefood.setup.SetupWizard</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- 개발 환경 설정 마법사 (JavaFX 창): mvn javafx:run -Pwizard-fx
+             하는 일은 위 콘솔판과 같습니다. 화면만 다릅니다. -->
+        <profile>
+            <id>wizard-fx</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <configuration>
+                            <mainClass>com.safefood.setup.SetupWizardFx</mainClass>
                         </configuration>
                     </plugin>
                 </plugins>

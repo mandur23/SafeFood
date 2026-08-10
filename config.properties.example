@@ -2,6 +2,7 @@
 #
 # 같은 폴더(프로젝트 루트)에 config.properties로 복사한 뒤 본인 환경에 맞게 채우거나,
 # Setup Wizard를 실행하면 자동으로 만들어집니다: mvn compile exec:java -Pwizard
+# (창으로 된 화면: mvn javafx:run -Pwizard-fx)
 
 db.url=jdbc:mysql://localhost:3306/safefood?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
 db.user=

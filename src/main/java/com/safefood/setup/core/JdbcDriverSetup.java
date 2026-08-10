@@ -1,4 +1,4 @@
-package com.safefood.setup;
+package com.safefood.setup.core;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  *   <li>없으면 Maven Central에서 받아 {@code lib/}에 저장 후 로드</li>
  * </ol>
  */
-final class JdbcDriverSetup {
+public final class JdbcDriverSetup {
 
     static final String VERSION = "8.4.0";
     private static final String JAR_NAME = "mysql-connector-j-" + VERSION + ".jar";
@@ -52,11 +52,12 @@ final class JdbcDriverSetup {
     /**
      * 드라이버를 쓸 수 있는 상태로 만듭니다.
      *
+     * @param out 진행 상황을 알릴 화면 ({@code System.out}을 직접 쓰지 않기 위해 받습니다)
      * @return 성공하면 true (이미 있었거나 방금 설치·로드함)
      */
-    static boolean ensureReady(Path projectRoot) {
+    public static boolean ensureReady(Path projectRoot, SetupReporter out) {
         if (isReady()) {
-            Ui.ok("MySQL Connector/J 확인 완료 (이미 로드됨)");
+            out.ok("MySQL Connector/J 확인 완료 (이미 로드됨)");
             return true;
         }
 
@@ -64,34 +65,34 @@ final class JdbcDriverSetup {
         Path jar = findExistingJar(libDir);
 
         if (jar == null) {
-            Ui.info("드라이버가 없어 Maven Central에서 받습니다...");
-            Ui.detail(DOWNLOAD_URL);
+            out.info("드라이버가 없어 Maven Central에서 받습니다...");
+            out.detail(DOWNLOAD_URL);
             try {
                 jar = download(libDir);
-                Ui.ok("다운로드 완료: lib/" + jar.getFileName());
+                out.ok("다운로드 완료: lib/" + jar.getFileName());
             } catch (IOException e) {
-                Ui.fail("드라이버 자동 설치 실패: " + e.getMessage());
-                Ui.detail("네트워크·방화벽을 확인하거나, 직접 jar를 lib/에 넣어 주세요.");
+                out.fail("드라이버 자동 설치 실패: " + e.getMessage());
+                out.detail("네트워크·방화벽을 확인하거나, 직접 jar를 lib/에 넣어 주세요.");
                 return false;
             }
         } else {
-            Ui.info("lib/" + jar.getFileName() + " 발견 — 런타임에 로드합니다.");
+            out.info("lib/" + jar.getFileName() + " 발견 — 런타임에 로드합니다.");
         }
 
         try {
             loadIntoRuntime(jar);
         } catch (Exception e) {
-            Ui.fail("드라이버 로드 실패: " + e.getMessage());
+            out.fail("드라이버 로드 실패: " + e.getMessage());
             return false;
         }
 
         if (!isReady()) {
-            Ui.fail("드라이버를 로드했지만 사용할 수 없습니다.");
+            out.fail("드라이버를 로드했지만 사용할 수 없습니다.");
             return false;
         }
 
-        Ui.ok("MySQL Connector/J 준비 완료 (" + jar.getFileName() + ")");
-        Ui.detail("Maven으로 실행하면(mvn compile exec:java) 이 단계 없이 바로 통과합니다.");
+        out.ok("MySQL Connector/J 준비 완료 (" + jar.getFileName() + ")");
+        out.detail("Maven으로 실행하면(mvn compile exec:java) 이 단계 없이 바로 통과합니다.");
         return true;
     }
 

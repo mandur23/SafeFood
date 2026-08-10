@@ -1,4 +1,4 @@
-package com.safefood.setup;
+package com.safefood.setup.core;
 
 /**
  * MySQL 접속 정보.
@@ -6,7 +6,7 @@ package com.safefood.setup;
  * <p>비밀번호를 들고 있으므로 {@link #toString()}에는 절대 포함하지 않습니다.
  * (로그·예외 메시지에 비밀번호가 찍히는 사고를 막기 위함)
  */
-final class DbConfig {
+public final class DbConfig {
 
     /**
      * 로컬 개발용 접속 옵션.
@@ -25,7 +25,7 @@ final class DbConfig {
     private final String user;
     private final String password;
 
-    DbConfig(String host, int port, String database, String user, String password) {
+    public DbConfig(String host, int port, String database, String user, String password) {
         this.host = host;
         this.port = port;
         this.database = database;
@@ -43,15 +43,23 @@ final class DbConfig {
         return "jdbc:mysql://" + host + ":" + port + "/" + database + "?" + PARAMS;
     }
 
-    String database() {
+    public String host() {
+        return host;
+    }
+
+    public int port() {
+        return port;
+    }
+
+    public String database() {
         return database;
     }
 
-    String user() {
+    public String user() {
         return user;
     }
 
-    String password() {
+    public String password() {
         return password;
     }
 

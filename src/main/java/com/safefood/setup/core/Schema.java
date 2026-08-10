@@ -1,4 +1,4 @@
-package com.safefood.setup;
+package com.safefood.setup.core;
 
 import java.util.List;
 

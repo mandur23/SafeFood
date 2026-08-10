@@ -1,0 +1,341 @@
+/*
+ * SafeFood 개발 환경 설정 마법사 (JavaFX) 화면 스타일.
+ *
+ * SetupWizardFx.java가 붙이는 style class와 짝을 이룹니다.
+ * 색을 바꾸려면 아래 .wizard-root의 -fx-* 변수만 고치면 전체에 반영됩니다.
+ */
+
+/* ── 공통 ─────────────────────────────────────────────── */
+
+.wizard-root {
+    -accent:        #2e7d5b;
+    -accent-strong: #236247;
+    -accent-soft:   #e6f2ec;
+    -ink:           #1b2b25;
+    -ink-muted:     #5f6f68;
+    -line:          #dde5e1;
+    -danger:        #c0392b;
+    -warn:          #b8860b;
+
+    -fx-background-color: #f4f7f5;
+    -fx-font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    -fx-font-size: 13px;
+}
+
+.label {
+    -fx-text-fill: -ink;
+}
+
+/* ── 머리말 ───────────────────────────────────────────── */
+
+.header {
+    -fx-background-color: white;
+    -fx-padding: 18 28 18 28;
+    -fx-border-color: transparent transparent -line transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.header-title {
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+}
+
+.header-subtitle {
+    -fx-text-fill: -ink-muted;
+}
+
+/* ── 왼쪽 단계 목록 ───────────────────────────────────── */
+
+.rail {
+    -fx-background-color: #1d3a2f;
+    -fx-padding: 20 16 20 16;
+    -fx-min-width: 208;
+    -fx-pref-width: 208;
+}
+
+.rail-row {
+    -fx-padding: 9 12 9 12;
+    -fx-background-radius: 8;
+}
+
+.rail-row .rail-label {
+    -fx-text-fill: #9fb6ac;
+}
+
+.rail-row .rail-badge {
+    -fx-min-width: 22;
+    -fx-min-height: 22;
+    -fx-alignment: center;
+    -fx-background-color: #2b5145;
+    -fx-background-radius: 11;
+    -fx-text-fill: #9fb6ac;
+    -fx-font-size: 11px;
+}
+
+.rail-row.done .rail-label {
+    -fx-text-fill: #cfe3d9;
+}
+
+.rail-row.done .rail-badge {
+    -fx-background-color: -accent;
+    -fx-text-fill: white;
+}
+
+.rail-row.active {
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+}
+
+.rail-row.active .rail-label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.rail-row.active .rail-badge {
+    -fx-background-color: white;
+    -fx-text-fill: #1d3a2f;
+    -fx-font-weight: bold;
+}
+
+.rail-footer {
+    -fx-text-fill: #7f978c;
+    -fx-font-size: 11px;
+    -fx-line-spacing: 2;
+}
+
+/* ── 페이지 ───────────────────────────────────────────── */
+
+.page-stack {
+    -fx-background-color: transparent;
+}
+
+.page {
+    -fx-background-color: transparent;
+}
+
+.page-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.page-desc {
+    -fx-text-fill: -ink-muted;
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: -line;
+    -fx-border-radius: 10;
+    -fx-padding: 16 18 16 18;
+}
+
+.card-title {
+    -fx-font-weight: bold;
+}
+
+.sub {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 12px;
+}
+
+.hint {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 12px;
+    -fx-padding: 0 2 0 2;
+}
+
+.path-value {
+    -fx-text-fill: -ink;
+    -fx-font-family: "Consolas", "D2Coding", monospace;
+    -fx-font-size: 12px;
+}
+
+.bullet-badge {
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-alignment: center;
+    -fx-background-color: -accent-soft;
+    -fx-background-radius: 10;
+    -fx-text-fill: -accent;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* ── 입력 ─────────────────────────────────────────────── */
+
+.field-label {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 12px;
+}
+
+.form .text-field,
+.form .password-field {
+    -fx-background-color: #fbfcfb;
+    -fx-border-color: -line;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 7 10 7 10;
+    -fx-pref-width: 340;
+}
+
+.form .text-field:focused,
+.form .password-field:focused {
+    -fx-border-color: -accent;
+    -fx-background-color: white;
+}
+
+.choice {
+    -fx-font-size: 13px;
+}
+
+.choice .radio,
+.choice .box {
+    -fx-border-color: #b9c7c1;
+}
+
+.choice:selected .radio .dot,
+.choice:selected .mark {
+    -fx-background-color: -accent;
+}
+
+.error {
+    -fx-text-fill: -danger;
+    -fx-font-size: 12px;
+}
+
+/* ── 상태 배지 ────────────────────────────────────────── */
+
+.badge {
+    -fx-padding: 4 10 4 10;
+    -fx-background-radius: 12;
+    -fx-font-size: 12px;
+}
+
+.badge-idle {
+    -fx-background-color: #eceff0;
+    -fx-text-fill: -ink-muted;
+}
+
+.badge-ok {
+    -fx-background-color: -accent-soft;
+    -fx-text-fill: -accent;
+}
+
+.badge-warn {
+    -fx-background-color: #fbf1d8;
+    -fx-text-fill: -warn;
+}
+
+.badge-fail {
+    -fx-background-color: #fbe6e3;
+    -fx-text-fill: -danger;
+}
+
+/* ── 진행 상황 · 로그 ─────────────────────────────────── */
+
+.progress-label {
+    -fx-font-weight: bold;
+}
+
+.progress .bar {
+    -fx-background-color: -accent;
+    -fx-background-radius: 4;
+}
+
+.progress .track {
+    -fx-background-color: #e7ecea;
+    -fx-background-radius: 4;
+}
+
+.log-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: -line;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-pref-height: 300;
+}
+
+.log-scroll > .viewport {
+    -fx-background-color: #fbfcfb;
+}
+
+.log-box {
+    -fx-padding: 10 12 10 12;
+    -fx-background-color: #fbfcfb;
+}
+
+.log-line {
+    -fx-font-family: "Consolas", "D2Coding", "Malgun Gothic", monospace;
+    -fx-font-size: 12px;
+}
+
+.log-step {
+    -fx-text-fill: -ink;
+    -fx-font-weight: bold;
+    -fx-padding: 8 0 2 0;
+}
+
+.log-ok {
+    -fx-text-fill: -accent;
+}
+
+.log-warn {
+    -fx-text-fill: -warn;
+}
+
+.log-fail {
+    -fx-text-fill: -danger;
+}
+
+.log-info {
+    -fx-text-fill: -ink;
+}
+
+.log-detail {
+    -fx-text-fill: -ink-muted;
+}
+
+/* ── 아래 내비게이션 ──────────────────────────────────── */
+
+.nav {
+    -fx-background-color: white;
+    -fx-padding: 14 28 14 28;
+    -fx-border-color: -line transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.nav-hint {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 12px;
+}
+
+.button {
+    -fx-background-radius: 7;
+    -fx-padding: 8 20 8 20;
+    -fx-cursor: hand;
+}
+
+.button.primary {
+    -fx-background-color: -accent;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.button.primary:hover {
+    -fx-background-color: -accent-strong;
+}
+
+.button.primary:disabled {
+    -fx-opacity: 0.45;
+}
+
+.button.ghost {
+    -fx-background-color: white;
+    -fx-text-fill: -ink;
+    -fx-border-color: -line;
+    -fx-border-radius: 7;
+}
+
+.button.ghost:hover {
+    -fx-background-color: #f1f5f3;
+}
