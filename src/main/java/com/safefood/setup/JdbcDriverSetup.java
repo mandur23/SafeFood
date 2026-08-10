@@ -1,4 +1,4 @@
-package SetupWizard;
+package com.safefood.setup;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,16 +18,19 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
- * MySQL Connector/J 자동 확인·설치·클래스패스 등록.
+ * MySQL Connector/J 확인 및 (Maven을 쓰지 않는 경우의) 대비책.
  *
+ * <p><b>Maven으로 실행하면 이 클래스는 사실상 하는 일이 없습니다.</b>
+ * pom.xml의 {@code com.mysql:mysql-connector-j} 의존성이 이미 클래스패스에 드라이버를
+ * 올려 두므로 첫 단계에서 바로 통과합니다.
+ *
+ * <p>아래 대비책은 Maven 없이 {@code javac}로 직접 컴파일해 돌리는 경우를 위해 남겨 둡니다.
  * <ol>
- *   <li>이미 로드돼 있으면 통과</li>
+ *   <li>이미 로드돼 있으면 통과 (Maven 실행 시 여기서 끝)</li>
  *   <li>{@code lib/mysql-connector-j*.jar}가 있으면 런타임에 로드</li>
  *   <li>없으면 Maven Central에서 받아 {@code lib/}에 저장 후 로드</li>
- *   <li>가능하면 {@code SafeFood.iml}에 라이브러리로 등록 (다음 IntelliJ 실행용)</li>
  * </ol>
  */
 final class JdbcDriverSetup {
@@ -40,9 +42,6 @@ final class JdbcDriverSetup {
     private static final String DOWNLOAD_URL =
             "https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/"
                     + VERSION + "/" + JAR_NAME;
-
-    private static final Pattern IML_JAR_ENTRY = Pattern.compile(
-            "mysql-connector-j[^\"']*\\.jar", Pattern.CASE_INSENSITIVE);
 
     /** DriverShim으로만 등록된 경우 Class.forName은 실패하므로 별도 플래그로 추적 */
     private static volatile boolean registeredViaShim;
@@ -92,7 +91,7 @@ final class JdbcDriverSetup {
         }
 
         Ui.ok("MySQL Connector/J 준비 완료 (" + jar.getFileName() + ")");
-        registerInIdeaModule(projectRoot, jar);
+        Ui.detail("Maven으로 실행하면(mvn compile exec:java) 이 단계 없이 바로 통과합니다.");
         return true;
     }
 
@@ -188,46 +187,6 @@ final class JdbcDriverSetup {
             return true;
         } catch (ReflectiveOperationException | SecurityException e) {
             return false;
-        }
-    }
-
-    /** IntelliJ 다음 실행을 위해 SafeFood.iml에 jar를 라이브러리로 넣습니다. */
-    private static void registerInIdeaModule(Path projectRoot, Path jar) {
-        Path iml = projectRoot.resolve("SafeFood.iml");
-        if (!Files.isRegularFile(iml)) {
-            return;
-        }
-        try {
-            String xml = Files.readString(iml, StandardCharsets.UTF_8);
-            String jarFileName = jar.getFileName().toString();
-            if (IML_JAR_ENTRY.matcher(xml).find()) {
-                Ui.detail("IntelliJ 모듈에 드라이버가 이미 등록돼 있습니다.");
-                return;
-            }
-
-            String entry = """
-                        <orderEntry type="module-library">
-                          <library>
-                            <CLASSES>
-                              <root url="jar://$MODULE_DIR$/lib/%s!/" />
-                            </CLASSES>
-                            <JAVADOC />
-                            <SOURCES />
-                          </library>
-                        </orderEntry>
-                    """.formatted(jarFileName);
-
-            String marker = "</component>";
-            int idx = xml.lastIndexOf(marker);
-            if (idx < 0) {
-                return;
-            }
-            String updated = xml.substring(0, idx) + entry + "  " + xml.substring(idx);
-            Files.writeString(iml, updated, StandardCharsets.UTF_8);
-            Ui.ok("IntelliJ 모듈(SafeFood.iml)에 드라이버를 등록했습니다.");
-            Ui.detail("에디터가 바로 반영하지 않으면 프로젝트를 다시 열어 주세요.");
-        } catch (IOException e) {
-            Ui.warn("SafeFood.iml 자동 등록 실패 (실행에는 영향 없음): " + e.getMessage());
         }
     }
 

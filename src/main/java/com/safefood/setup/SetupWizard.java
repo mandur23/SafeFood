@@ -1,4 +1,4 @@
-package SetupWizard;
+package com.safefood.setup;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -6,27 +6,27 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 
 /**
- * FoodMate 개발 환경 설정 마법사.
+ * SafeFood 개발 환경 설정 마법사.
  *
  * <p>저장소를 클론한 팀원이 <b>한 번 실행</b>하면 아래 작업을 순서대로 처리합니다.
  * <ol>
- *   <li>JDBC 드라이버 확인 (없으면 lib/에 자동 다운로드·적용)</li>
+ *   <li>JDBC 드라이버 확인 (Maven이 이미 올려 두므로 보통 바로 통과)</li>
  *   <li>MySQL 접속 정보 입력 및 연결 테스트</li>
  *   <li>데이터베이스 생성</li>
  *   <li>테이블 생성</li>
  *   <li>기본 데이터(알레르기·기분 태그) 삽입</li>
- *   <li>src/config.properties 작성</li>
+ *   <li>config.properties 작성 (프로젝트 루트)</li>
  * </ol>
  *
  * <p>중간에 실패해도 되는 만큼은 진행하고, 무엇이 남았는지 마지막에 알려 줍니다.
  * 여러 번 실행해도 기존 데이터는 지워지지 않습니다.
  *
- * <p>실행 방법은 {@code src/SetupWizard/SetupWizard.md} 참고.
+ * <p>실행: {@code mvn compile exec:java -Pwizard} — 자세한 설명은 {@code docs/SetupWizard.md} 참고.
  */
 public final class SetupWizard {
 
     private static final int TOTAL_STEPS = 6;
-    private static final String DEFAULT_DATABASE = "foodmate";
+    private static final String DEFAULT_DATABASE = "safefood";
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_MYSQL_PORT = 3306;
     private static final int DEFAULT_SOCKET_PORT = 5000;
@@ -220,7 +220,7 @@ public final class SetupWizard {
         Ui.ok("공유용 예시 파일 갱신: " + exampleFile.getFileName());
 
         if (ConfigFileWriter.ensureGitignore(projectRoot)) {
-            Ui.ok(".gitignore에 src/config.properties를 추가했습니다.");
+            Ui.ok(".gitignore에 /config.properties를 추가했습니다.");
         } else {
             Ui.ok(".gitignore 확인 완료 (이미 등록돼 있음)");
         }
@@ -232,16 +232,16 @@ public final class SetupWizard {
     private static void summary(DbConfig db, boolean databaseDone, boolean configWritten) {
         Ui.section("설정 결과");
         Ui.info((databaseDone ? "[완료] " : "[미완] ") + "데이터베이스 " + db.database() + " (테이블 + 기본 데이터)");
-        Ui.info((configWritten ? "[완료] " : "[유지] ") + "src/config.properties");
+        Ui.info((configWritten ? "[완료] " : "[유지] ") + "config.properties");
 
         Ui.blank();
         Ui.info("다음 단계");
         if (!databaseDone) {
             Ui.detail("- MySQL 서버를 켜고 마법사를 다시 실행하면 남은 준비를 이어서 합니다.");
         }
-        Ui.detail("- map.api.key를 비워 뒀다면 발급 후 src/config.properties에 채워 넣으세요.");
+        Ui.detail("- map.api.key를 비워 뒀다면 발급 후 config.properties에 채워 넣으세요.");
         Ui.detail("- config.properties는 절대 커밋하지 마세요. 공유는 .example 파일로 합니다.");
-        Ui.detail("- 자세한 설명: src/SetupWizard/SetupWizard.md");
+        Ui.detail("- 자세한 설명: docs/SetupWizard.md");
         Ui.blank();
     }
 }

@@ -25,12 +25,12 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 
 | 구분 | 사용 기술 |
 |------|-----------|
-| Language | Java <!-- 사용할 JDK 버전 확정 후 기입 (예: 17) --> |
+| Language | Java 21 <!-- 바꾸려면 pom.xml의 maven.compiler.release 값만 수정 --> |
 | Database | MySQL 8.0 **또는** 로컬 파일 (`data/`) |
 | DB 연동 | JDBC (MySQL Connector/J) / 파일 I/O (`data/public`, `data/private`) |
 | 실시간 통신 | Java Socket (TCP) — `ServerSocket` / `Socket`, 클라이언트별 스레드 |
 | 지도 | Kakao Map API <!-- 또는 Naver Map API — 택 1 후 정리 --> |
-| Build | <!-- Gradle / Maven / IDE 직접 실행 중 택 1 --> |
+| Build | Maven (`pom.xml`) — 표준 디렉터리 레이아웃 |
 | IDE | IntelliJ IDEA |
 | 협업 | Git, GitHub |
 
@@ -120,31 +120,42 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 
 ## 📁 프로젝트 구조
 
+**Maven 표준 디렉터리 레이아웃**을 따릅니다.
+
 ```
-FoodMate/
+SafeFood/
+├── pom.xml                                # 빌드 설정 · 의존성 (JDBC 드라이버 등)
+├── config.properties                      # 개인 설정 — 커밋 금지 (Setup Wizard가 생성)
+├── config.properties.example              # 값이 빈 공유용 사본 — 커밋 가능
 ├── src/
-│   ├── Main.java                      # 진입점 (엔트리 포인트)
-│   ├── config.properties              # 개인 설정 — 커밋 금지 (Setup Wizard가 생성)
-│   ├── com/foodmate/
-│   │   ├── dto/                       # UserDto, MenuDto, RestaurantDto ...
-│   │   ├── dao/                       # 저장소 접근 (JDBC 또는 data/ 파일)
-│   │   ├── service/                   # 비즈니스 로직
-│   │   │   ├── AuthService            # 로그인 / 회원가입
-│   │   │   ├── RecommendService       # 추천 알고리즘
-│   │   │   ├── AllergyService         # 알레르기 매칭 / 위험도 판정
-│   │   │   ├── GroupService           # 그룹 생성·참여, 조건 병합, 투표
-│   │   │   └── MapService             # 지도 API 호출
-│   │   ├── network/                   # 소켓 통신 (방장이 서버)
-│   │   │   ├── GroupServer            # 방장 앱이 여는 서버 (ServerSocket, 접속 수락)
-│   │   │   ├── ClientHandler          # 참여자 1명당 스레드
-│   │   │   ├── Room                   # 접속자 목록 · 브로드캐스트 · 투표 집계
-│   │   │   ├── GroupClient            # 소켓 + 수신 스레드 (방장도 자기 서버에 접속)
-│   │   │   └── Message                # 프로토콜 메시지 (타입 + 본문) 파싱·생성
-│   │   └── view/                      # 화면 출력 / 입력 처리
-│   └── SetupWizard/                   # 개발 환경 설정 마법사 (DB·data/·설정 파일 자동 준비)
-├── data/                              # DB 미사용 시 파일 저장소
-│   ├── public/                        # 앱에 필요한 공통 데이터 — 커밋 가능
-│   └── private/                       # 개인·팀 서버 데이터 — 커밋 금지
+│   ├── main/
+│   │   ├── java/com/safefood/
+│   │   │   ├── Main.java                  # 진입점 (엔트리 포인트)
+│   │   │   ├── dto/                       # UserDto, MenuDto, RestaurantDto ...
+│   │   │   ├── dao/                       # 저장소 접근 (JDBC 또는 data/ 파일)
+│   │   │   ├── service/                   # 비즈니스 로직
+│   │   │   │   ├── AuthService            # 로그인 / 회원가입
+│   │   │   │   ├── RecommendService       # 추천 알고리즘
+│   │   │   │   ├── AllergyService         # 알레르기 매칭 / 위험도 판정
+│   │   │   │   ├── GroupService           # 그룹 생성·참여, 조건 병합, 투표
+│   │   │   │   └── MapService             # 지도 API 호출
+│   │   │   ├── network/                   # 소켓 통신 (방장이 서버)
+│   │   │   │   ├── GroupServer            # 방장 앱이 여는 서버 (ServerSocket, 접속 수락)
+│   │   │   │   ├── ClientHandler          # 참여자 1명당 스레드
+│   │   │   │   ├── Room                   # 접속자 목록 · 브로드캐스트 · 투표 집계
+│   │   │   │   ├── GroupClient            # 소켓 + 수신 스레드 (방장도 자기 서버에 접속)
+│   │   │   │   └── Message                # 프로토콜 메시지 (타입 + 본문) 파싱·생성
+│   │   │   ├── view/                      # 화면 출력 / 입력 처리
+│   │   │   └── setup/                     # 개발 환경 설정 마법사 (DB·data/·설정 파일 자동 준비)
+│   │   └── resources/                     # 빌드 시 target/classes로 복사되는 리소스
+│   └── test/
+│       └── java/com/safefood/             # 테스트 코드 (JUnit 5)
+├── data/                                  # DB 미사용 시 파일 저장소
+│   ├── public/                            # 앱에 필요한 공통 데이터 — 커밋 가능
+│   └── private/                           # 개인·팀 서버 데이터 — 커밋 금지
+├── docs/
+│   └── SetupWizard.md                     # Setup Wizard 사용 설명
+├── target/                                # 빌드 산출물 — 커밋 금지 (Maven이 생성)
 ├── .gitignore
 └── README.md
 ```
@@ -152,6 +163,14 @@ FoodMate/
 > 📦 **패키지(폴더)만 만들어 둔 상태입니다.**
 > `service/`·`network/` 아래 클래스 이름은 **앞으로 만들 예정 목록**이라 아직 파일이 없습니다.
 > 각 폴더의 `package-info.java`에 "여기엔 무엇을 넣는지"를 적어 뒀으니 작업 전에 한 번 읽어 보세요.
+
+> 📌 **Java 파일은 반드시 `src/main/java/` 아래에 두세요.**
+> Maven은 이 경로만 소스로 인식합니다. 패키지 이름과 폴더 경로가 정확히 일치해야 하고
+> (`com.safefood.service` → `src/main/java/com/safefood/service/`), 패키지 이름은 모두 소문자입니다.
+
+> 📌 **`config.properties`는 `src/main/resources/`가 아니라 프로젝트 루트에 둡니다.**
+> Setup Wizard가 실행 중에 만들고 고치는 파일이라서 그렇습니다. `resources/`에 두면 빌드할 때
+> `target/classes/`로 복사된 사본을 읽게 되어, 값을 고쳐도 다시 빌드하기 전까지 반영되지 않습니다.
 
 **계층 규칙** — 의존 방향은 `view → service → dao → 저장소(MySQL 또는 data/)` 한 방향으로만 흐르게 합니다.
 
@@ -169,7 +188,7 @@ FoodMate/
 | `data/public/` | 앱이 **동작하는 데 필요한** 공통 데이터 (알레르기·기분 태그·메뉴 마스터 등) | ⭕ |
 | `data/private/` | **개인 데이터**(회원·취향·즐겨찾기·내 히스토리) + **팀 서버 데이터**(방장 쪽 그룹·투표·접속 기록 등) | ❌ |
 
-자세한 파일 목록·형식은 [Setup Wizard — data/ 폴더](src/SetupWizard/SetupWizard.md#-데이터베이스-미사용--data-폴더)를 보세요.
+자세한 파일 목록·형식은 [Setup Wizard — data/ 폴더](docs/SetupWizard.md#-데이터베이스-미사용--data-폴더)를 보세요.
 
 <br>
 
@@ -177,24 +196,41 @@ FoodMate/
 
 ### 1. 요구 사항
 
-- JDK <!-- 버전 --> 이상
+- JDK 21 이상
+- Maven 3.6 이상 — **IntelliJ에 내장돼 있어 따로 설치하지 않아도 됩니다**
 - **(선택)** MySQL 8.0 이상 — DB를 쓸 때만
-- **(선택)** MySQL Connector/J (JDBC 드라이버) — DB를 쓸 때만
 - 지도 API 키 (Kakao Developers 등에서 발급)
 - 비어 있는 TCP 포트 1개 (소켓 서버용, 기본 `5000`)
 
 > MySQL 없이 시작해도 됩니다. 이때 앱 데이터는 `data/public/`, `data/private/`에 저장합니다.
 
+> 📦 **JDBC 드라이버는 직접 받지 않아도 됩니다.**
+> `pom.xml`에 `com.mysql:mysql-connector-j` 의존성이 있어서 Maven이 자동으로 내려받습니다.
+> (예전처럼 `lib/` 폴더에 jar를 직접 넣던 방식은 더 이상 쓰지 않습니다.)
+
 ### 2. 저장소 클론
 
 ```bash
 git clone <저장소-주소>
-cd FoodMate
+cd SafeFood
 ```
 
-> ⚡ **3~4단계는 [Setup Wizard](src/SetupWizard/SetupWizard.md)로 자동 처리할 수 있습니다.**
-> IntelliJ에서 `src/SetupWizard/SetupWizard.java`를 열고 ▶ 버튼을 누르면
+IntelliJ에서는 폴더가 아니라 **`pom.xml`을 열고 `Open as Project`** 를 선택하세요.
+Maven 프로젝트로 인식되면서 의존성을 자동으로 내려받습니다.
+
+```bash
+# 터미널에서 확인하려면
+mvn clean compile
+```
+
+> ⚡ **3~4단계는 [Setup Wizard](docs/SetupWizard.md)로 자동 처리할 수 있습니다.**
+>
+> ```bash
+> mvn compile exec:java -Pwizard
+> ```
+>
 > DB(또는 `data/`) 준비부터 `config.properties` 작성까지 한 번에 끝납니다.
+> IntelliJ에서는 `src/main/java/com/safefood/setup/SetupWizard.java`를 열고 ▶ 버튼을 눌러도 됩니다.
 > 아래 3~4단계는 **직접 하고 싶거나, 무엇이 만들어지는지 확인하고 싶을 때** 참고하세요.
 
 ### 3. 데이터 저장소 준비
@@ -206,7 +242,7 @@ cd FoodMate
 MySQL에 접속해 데이터베이스를 생성합니다.
 
 ```sql
-CREATE DATABASE foodmate DEFAULT CHARACTER SET utf8mb4;
+CREATE DATABASE safefood DEFAULT CHARACTER SET utf8mb4;
 ```
 
 이후 [데이터베이스 스키마](#-데이터베이스-스키마)의 테이블 생성 쿼리를 실행합니다.
@@ -221,18 +257,18 @@ CREATE DATABASE foodmate DEFAULT CHARACTER SET utf8mb4;
 | `data/public/` | 앱에 필요한 공통 데이터 (알레르기·기분·메뉴 등) | ⭕ |
 | `data/private/` | 개인 데이터 + 팀 서버 데이터 (회원·취향 / 그룹·투표 등) | ❌ |
 
-형식·파일 목록은 [Setup Wizard.md](src/SetupWizard/SetupWizard.md#-데이터베이스-미사용--data-폴더)를 참고하세요.
+형식·파일 목록은 [Setup Wizard.md](docs/SetupWizard.md#-데이터베이스-미사용--data-폴더)를 참고하세요.
 
 ### 4. 설정 파일 작성
 
 DB 계정과 API 키는 **소스 코드에 직접 적지 말고** 별도 설정 파일로 분리합니다.
 (계정·키가 GitHub에 그대로 올라가는 것을 막기 위함)
 
-`src/config.properties` 파일을 만들고 자신의 환경에 맞게 채웁니다.
-(`data/`만 쓸 때는 `db.*` 값을 비워 두거나 나중에 채워도 됩니다.)
+**프로젝트 루트**에 `config.properties` 파일을 만들고 자신의 환경에 맞게 채웁니다.
+(`config.properties.example`을 복사해 쓰면 편합니다. `data/`만 쓸 때는 `db.*` 값을 비워 두거나 나중에 채워도 됩니다.)
 
 ```properties
-db.url=jdbc:mysql://localhost:3306/foodmate?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+db.url=jdbc:mysql://localhost:3306/safefood?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 db.user=본인_계정
 db.password=본인_비밀번호
 
@@ -249,15 +285,28 @@ socket.port=5000
 ### 5. 실행
 
 ```bash
-# 컴파일
-javac -encoding UTF-8 -d out src/Main.java
-
-# 실행 (MySQL 사용 시 JDBC 드라이버를 클래스패스에 포함)
-java -cp "out;lib/mysql-connector-j.jar" Main
-
-# data/만 쓸 때는 드라이버 없이 실행해도 됩니다
-# java -cp out Main
+# 컴파일 + 실행 (JDBC 드라이버는 Maven이 알아서 클래스패스에 넣습니다)
+mvn compile exec:java
 ```
+
+JAR로 묶어서 실행하려면 클래스패스에 의존성을 함께 지정합니다.
+
+```bash
+mvn clean package                    # target/safefood.jar 생성
+mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+java -cp "target/classes;$(cat cp.txt)" com.safefood.Main
+```
+
+자주 쓰는 Maven 명령입니다.
+
+| 명령 | 하는 일 |
+|------|---------|
+| `mvn clean` | `target/` 삭제 |
+| `mvn compile` | `src/main/java` 컴파일 → `target/classes` |
+| `mvn test` | `src/test/java` 테스트 실행 |
+| `mvn package` | JAR 생성 → `target/safefood.jar` |
+| `mvn compile exec:java` | 앱 실행 (`com.safefood.Main`) |
+| `mvn compile exec:java -Pwizard` | Setup Wizard 실행 |
 
 그룹 추천은 **방장이 방을 만들면 그 앱이 곧 서버**라서, 서버를 따로 켜지 않습니다.
 같은 앱을 인원수만큼 띄우고 한 명이 방을 만들면, 나머지는 그 주소로 참여하면 됩니다.
@@ -265,10 +314,10 @@ java -cp "out;lib/mysql-connector-j.jar" Main
 
 ```bash
 # 참여자 수만큼 여러 개 띄웁니다 (한 명이 방장, 나머지는 참여자)
-java -cp "out;lib/mysql-connector-j.jar" Main
+mvn compile exec:java
 ```
 
-> IntelliJ에서는 `Main.java`의 `Main` 메서드 옆 ▶ 버튼으로 바로 실행할 수 있습니다.
+> IntelliJ에서는 `Main.java`의 `main` 메서드 옆 ▶ 버튼으로 바로 실행할 수 있습니다.
 > 클라이언트를 **여러 개 동시에** 띄우려면 실행 구성(Run/Debug Configurations)에서
 > `Modify options → Allow multiple instances`를 체크하세요.
 > <!-- 웹/GUI로 결정되면 이 부분을 해당 실행 방법으로 교체하세요 -->
@@ -282,7 +331,7 @@ java -cp "out;lib/mysql-connector-j.jar" Main
 > MySQL을 쓰지 않을 때는 아래 테이블 대신 `data/` 파일을 씁니다.
 > - 마스터성 데이터 → `data/public/`
 > - 회원·취향·그룹·투표 등 → `data/private/`
-> ([Setup Wizard.md](src/SetupWizard/SetupWizard.md#-데이터베이스-미사용--data-폴더) 참고)
+> ([Setup Wizard.md](docs/SetupWizard.md#-데이터베이스-미사용--data-폴더) 참고)
 
 ### 회원 · 취향 · 알레르기
 
@@ -694,8 +743,8 @@ CREATE TABLE feedback (
 
 - [x] 프로젝트 생성 및 저장소 세팅
 - [x] 기능 목록 정리
-- [x] 개발 환경 설정 마법사 작성 (`src/SetupWizard`)
-- [x] 패키지 구조 만들기 (`com.foodmate`)
+- [x] 개발 환경 설정 마법사 작성 (`com.safefood.setup`)
+- [x] 패키지 구조 만들기 (`com.safefood`)
 - [ ] 애플리케이션 형태(웹 / GUI) 결정
 - [ ] 기능 우선순위 확정 (MVP 범위 정하기)
 - [ ] DB 스키마 확정 및 테이블 생성

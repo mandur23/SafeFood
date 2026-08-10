@@ -1,4 +1,4 @@
-package SetupWizard;
+package com.safefood.setup;
 
 import java.util.List;
 

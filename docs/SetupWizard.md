@@ -1,9 +1,9 @@
 # Setup Wizard
 
-> FoodMate **개발 환경 설정 마법사** — 저장소를 클론한 팀원이 한 번 실행하면 끝
+> SafeFood **개발 환경 설정 마법사** — 저장소를 클론한 팀원이 한 번 실행하면 끝
 
 MySQL 접속 확인부터 DB·테이블 생성, 기본 데이터 삽입, `config.properties` 작성까지
-[README의 시작하기 3~4단계](../../README.md#-시작하기)를 자동으로 처리합니다.
+[README의 시작하기 3~4단계](../README.md#-시작하기)를 자동으로 처리합니다.
 
 **MySQL을 쓰지 않는 경우**에는 DB 단계를 건너뛰고, 프로젝트 루트의 `data/` 폴더에
 정보를 생성·저장하는 방식으로 진행할 수 있습니다. (아래 [데이터베이스 미사용](#-데이터베이스-미사용--data-폴더) 참고)
@@ -16,33 +16,28 @@ MySQL 접속 확인부터 DB·테이블 생성, 기본 데이터 삽입, `config
 
 ### 준비물
 
-- JDK 21 이상(프로젝트 설정 기준)
+- JDK 21 이상 (`pom.xml`의 `maven.compiler.release` 기준)
+- Maven 3.6 이상 — IntelliJ에 내장돼 있어 따로 설치하지 않아도 됩니다
 - **(선택)** 실행 중인 MySQL 8.0 — DB를 쓸 때만 필요
-- **(선택)** MySQL Connector/J (JDBC 드라이버) — DB를 쓸 때만 필요
 
-> 드라이버가 없거나 MySQL에 연결하지 못하면 DB 단계를 건너뜁니다.
+> MySQL에 연결하지 못하면 DB 단계를 건너뜁니다.
 > 이때는 **설정 파일**을 만들고, 앱 데이터는 **`data/` 폴더**에 생성·저장합니다.
 
-### IntelliJ에서 (권장)
+> 📦 **JDBC 드라이버는 준비할 필요가 없습니다.** `pom.xml`에 의존성으로 들어 있어
+> Maven이 자동으로 내려받고 클래스패스에 올려 줍니다.
 
-`SetupWizard.java`를 열고 `Main` 메서드 옆 ▶ 버튼을 누르면 됩니다.
-
-Connector/J가 없으면 마법사가 Maven Central에서 `lib/`로 받은 뒤 이번 실행에 바로 쓰고,
-가능하면 `SafeFood.iml`에도 등록합니다. 네트워크가 안 되면 설정 파일만 만드는 쪽으로 이어갑니다.
-
-### 터미널에서
+### 터미널에서 (권장)
 
 ```bash
-# 컴파일
-javac -encoding UTF-8 -d out src/SetupWizard/*.java
-
-# 실행 (Windows — 클래스패스 구분자는 세미콜론)
-java -Dstdout.encoding=UTF-8 -cp "out;lib/mysql-connector-j.jar" SetupWizard.SetupWizard
+mvn compile exec:java -Pwizard
 ```
 
-> **한글이 깨진다면** 위처럼 `-Dstdout.encoding=UTF-8`을 붙이거나, 실행 전에 `chcp 65001`을 한 번 실행하세요.
-> macOS·Linux는 클래스패스 구분자를 `:`로 바꿔 주세요. (`"out:lib/mysql-connector-j.jar"`)
-> DB를 쓰지 않을 때는 jar 없이도 실행할 수 있습니다. (`-cp out`)
+> **한글이 깨진다면** 실행 전에 `chcp 65001`을 한 번 실행하세요.
+
+### IntelliJ에서
+
+`src/main/java/com/safefood/setup/SetupWizard.java`를 열고 `main` 메서드 옆 ▶ 버튼을 누르면 됩니다.
+(`pom.xml`을 `Open as Project`로 열어 Maven 프로젝트로 인식된 상태여야 합니다.)
 
 <br>
 
@@ -50,12 +45,12 @@ java -Dstdout.encoding=UTF-8 -cp "out;lib/mysql-connector-j.jar" SetupWizard.Set
 
 | 단계 | 내용 | 실패하면 |
 |------|------|----------|
-| 1 | JDBC 드라이버 확인·자동 설치 | 실패 시 설정 파일만 만들지 선택 |
+| 1 | JDBC 드라이버 확인 (Maven이 이미 준비) | 실패 시 설정 파일만 만들지 선택 |
 | 2 | 접속 정보 입력 → 연결 테스트 | 원인을 한글로 안내하고 재입력 / DB 건너뛰기 |
-| 3 | `CREATE DATABASE foodmate` | 이후 DB 단계 건너뛰고 `data/` 모드로 진행 |
+| 3 | `CREATE DATABASE safefood` | 이후 DB 단계 건너뛰고 `data/` 모드로 진행 |
 | 4 | 테이블 18개 생성 | 이후 DB 단계 건너뜀 |
 | 5 | 알레르기·기분 태그 기본 데이터 삽입 | 건너뜀 (`data/`에 기본 파일로 대체 가능) |
-| 6 | `src/config.properties` 작성 | — |
+| 6 | `config.properties` 작성 (프로젝트 루트) | — |
 
 중간에 실패해도 **할 수 있는 데까지 진행하고**, 마지막에 무엇이 남았는지 알려 줍니다.
 MySQL을 켠 뒤 다시 실행하면 남은 DB 준비를 이어서 합니다.
@@ -64,10 +59,10 @@ MySQL을 켠 뒤 다시 실행하면 남은 DB 준비를 이어서 합니다.
 
 | 파일 | 커밋 | 설명 |
 |------|------|------|
-| `src/config.properties` | ❌ **금지** | 내 DB 계정·API 키가 들어 있음 |
-| `src/config.properties.example` | ⭕ | 값이 빈 공유용 사본 |
-| `src/config.properties.bak` | ❌ | 덮어쓰기 전 자동 백업 |
-| `.gitignore` | ⭕ | `src/config.properties`·`data/private/` 항목이 없으면 자동 추가 |
+| `config.properties` | ❌ **금지** | 내 DB 계정·API 키가 들어 있음 (프로젝트 루트) |
+| `config.properties.example` | ⭕ | 값이 빈 공유용 사본 |
+| `config.properties.bak` | ❌ | 덮어쓰기 전 자동 백업 |
+| `.gitignore` | ⭕ | `/config.properties`·`data/private/` 항목이 없으면 자동 추가 |
 | `data/public/` | ⭕ | 앱 동작에 필요한 공통 데이터 |
 | `data/private/` | ❌ | 개인 데이터 · 팀 서버 데이터 |
 
@@ -188,7 +183,7 @@ DB를 쓰지 않고 `data/`만 쓰는 경우, 마스터 목록(알레르기·기
 DROP TABLE menu_allergy;
 
 -- 방법 2) 처음부터 다시 (⚠️ 데이터가 전부 사라집니다)
-DROP DATABASE foodmate;
+DROP DATABASE safefood;
 ```
 
 > 마법사는 **어떤 것도 지우지 않습니다.** 삭제는 위처럼 직접 실행하세요.

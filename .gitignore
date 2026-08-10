@@ -1,8 +1,29 @@
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+dependency-reduced-pom.xml
+
+# Maven이 의존성을 관리하므로 lib/에 jar를 커밋하지 않습니다.
+# (Maven 없이 실행할 때 SetupWizard가 여기에 드라이버를 내려받습니다)
+lib/
+
 ### IntelliJ IDEA ###
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .kotlin
+
+# 아래 파일들은 pom.xml에서 파생되므로 커밋하지 않습니다 (팀원 간 충돌 방지).
+# encodings.xml·inspectionProfiles·vcs.xml 같은 공유 설정은 계속 커밋합니다.
+*.iml
+/.idea/modules.xml
+/.idea/misc.xml
+/.idea/workspace.xml
+/.idea/compiler.xml
+/.idea/jarRepositories.xml
 
 ### Eclipse ###
 .apt_generated
@@ -29,9 +50,10 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-### FoodMate ###
+### SafeFood ###
 # 개인 DB 계정·API 키가 들어 있는 파일 (공유용 예시는 .example)
-src/config.properties
+/config.properties
+/config.properties.bak
 
 # DB 미사용: private = 개인·팀 서버 데이터 (public = 앱 공통 데이터, 커밋 가능)
 data/private/

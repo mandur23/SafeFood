@@ -1,8 +1,8 @@
-package com.foodmate.network;
+package com.safefood.network;
 
 import java.io.IOException;
 
-public class Socket_main {
+public class SocketMain {
     public static void main(String[] args) {
 
     }

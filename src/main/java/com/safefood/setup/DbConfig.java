@@ -1,4 +1,4 @@
-package SetupWizard;
+package com.safefood.setup;
 
 /**
  * MySQL 접속 정보.

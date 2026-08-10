@@ -12,4 +12,4 @@
  * <p>애플리케이션 형태(콘솔 / 웹 / GUI)가 정해지면 이 패키지 구성이 가장 크게 바뀝니다.
  * README의 <b>UI 형태 결정 필요</b> 안내를 참고하세요.
  */
-package com.foodmate.view;
+package com.safefood.view;

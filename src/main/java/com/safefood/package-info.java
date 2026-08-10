@@ -1,5 +1,5 @@
 /**
- * FoodMate 애플리케이션 루트 패키지.
+ * SafeFood 애플리케이션 루트 패키지.
  *
  * <p>하위 패키지 구성 (자세한 내용은 README의 <b>프로젝트 구조</b> 절 참고)
  * <ul>
@@ -13,4 +13,4 @@
  * <p>의존 방향은 <b>view → service → dao → DB</b> 한 방향으로만 흐르게 합니다.
  * (dao가 service를 부르거나, service가 화면에 직접 출력하지 않도록)
  */
-package com.foodmate;
+package com.safefood;

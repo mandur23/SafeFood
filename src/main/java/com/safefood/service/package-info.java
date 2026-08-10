@@ -13,4 +13,4 @@
  * <p>추천 흐름과 그룹 조건 병합 규칙은 README의 <b>추천 알고리즘 구상</b> 절에 정리돼 있습니다.
  * 화면에 직접 출력({@code System.out})하지 말고 결과 객체를 돌려주세요.
  */
-package com.foodmate.service;
+package com.safefood.service;

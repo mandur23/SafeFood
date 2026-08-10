@@ -1,4 +1,4 @@
-package SetupWizard;
+package com.safefood.setup;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,16 +10,20 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 설정 파일(src/config.properties)과 .gitignore 처리.
+ * 설정 파일(프로젝트 루트의 config.properties)과 .gitignore 처리.
  *
  * <p>비밀번호가 담기는 파일을 만들기 때문에, .gitignore에 등록됐는지도 함께 확인합니다.
  * 팀원 공유용으로는 값이 비어 있는 config.properties.example을 따로 만듭니다.
+ *
+ * <p>이 파일은 마법사가 <b>실행 중에</b> 만들고 고치므로 src/main/resources가 아니라
+ * 프로젝트 루트에 둡니다. resources에 두면 빌드로 target/classes에 복사된 사본을 읽게 되어,
+ * 값을 고쳐도 다시 빌드하기 전까지 반영되지 않습니다.
  */
 final class ConfigFileWriter {
 
     private static final String CONFIG_NAME = "config.properties";
     private static final String EXAMPLE_NAME = "config.properties.example";
-    private static final String IGNORE_ENTRY = "src/config.properties";
+    private static final String IGNORE_ENTRY = "/config.properties";
 
     private ConfigFileWriter() {
     }
@@ -27,13 +31,13 @@ final class ConfigFileWriter {
     /**
      * 프로젝트 최상위 경로를 찾습니다.
      *
-     * <p>실행 위치(user.dir)에서 시작해 위로 올라가며 src 폴더와 README.md가 같이 있는 곳을 찾습니다.
-     * IntelliJ ▶ 버튼으로 실행하면 대개 첫 번째 시도에 바로 찾습니다.
+     * <p>실행 위치(user.dir)에서 시작해 위로 올라가며 pom.xml과 README.md가 같이 있는 곳을 찾습니다.
+     * IntelliJ ▶ 버튼이나 mvn exec:java로 실행하면 대개 첫 번째 시도에 바로 찾습니다.
      */
     static Path findProjectRoot() {
         Path current = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
         for (int depth = 0; depth < 5 && current != null; depth++) {
-            if (Files.isDirectory(current.resolve("src")) && Files.exists(current.resolve("README.md"))) {
+            if (Files.isRegularFile(current.resolve("pom.xml")) && Files.exists(current.resolve("README.md"))) {
                 return current;
             }
             current = current.getParent();
@@ -43,11 +47,11 @@ final class ConfigFileWriter {
     }
 
     static Path configPath(Path projectRoot) {
-        return projectRoot.resolve("src").resolve(CONFIG_NAME);
+        return projectRoot.resolve(CONFIG_NAME);
     }
 
     static Path examplePath(Path projectRoot) {
-        return projectRoot.resolve("src").resolve(EXAMPLE_NAME);
+        return projectRoot.resolve(EXAMPLE_NAME);
     }
 
     /** 기존 파일을 config.properties.bak으로 백업합니다. */
@@ -99,7 +103,7 @@ final class ConfigFileWriter {
     /** 값이 비어 있는 공유용 예시 파일. 비밀이 없으므로 커밋해도 됩니다. */
     static void writeExample(Path exampleFile, String databaseName, int socketPort) throws IOException {
         String content = """
-                # FoodMate 설정 파일 예시 (이 파일은 커밋해도 됩니다)
+                # SafeFood 설정 파일 예시 (이 파일은 커밋해도 됩니다)
                 #
                 # 이 파일을 config.properties로 복사한 뒤 본인 환경에 맞게 채우거나,
                 # SetupWizard를 실행하면 자동으로 만들어집니다.
@@ -138,7 +142,7 @@ final class ConfigFileWriter {
             updated.append(System.lineSeparator());
         }
         updated.append(System.lineSeparator())
-                .append("### FoodMate ###").append(System.lineSeparator())
+                .append("### SafeFood ###").append(System.lineSeparator())
                 .append("# 개인 DB 계정·API 키가 들어 있는 파일 (공유용 예시는 .example)")
                 .append(System.lineSeparator())
                 .append(IGNORE_ENTRY).append(System.lineSeparator());

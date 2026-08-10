@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.safefood</groupId>
+    <artifactId>safefood</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>SafeFood</name>
+    <description>알레르기를 고려한 음식 추천 · 그룹 메뉴 결정 애플리케이션</description>
+
+    <properties>
+        <!-- JDK 버전을 바꾸려면 이 값만 고치면 됩니다. -->
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <mysql.connector.version>8.4.0</mysql.connector.version>
+        <javafx.version>21.0.4</javafx.version>
+        <junit.version>5.10.2</junit.version>
+        <exec.plugin.version>3.2.0</exec.plugin.version>
+        <javafx.plugin.version>0.0.8</javafx.plugin.version>
+        <compiler.plugin.version>3.13.0</compiler.plugin.version>
+        <surefire.plugin.version>3.2.5</surefire.plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- MySQL JDBC 드라이버. lib/ 폴더에 jar를 직접 넣던 방식을 대체합니다. -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>${mysql.connector.version}</version>
+        </dependency>
+
+        <!-- JavaFX (GUI). 콘솔/웹으로 방향이 바뀌면 이 두 개를 지우면 됩니다. -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>safefood</finalName>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler.plugin.version}</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.plugin.version}</version>
+            </plugin>
+
+            <!-- mvn exec:java 로 일반 실행 / -Pwizard 로 Setup Wizard 실행 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${exec.plugin.version}</version>
+                <configuration>
+                    <mainClass>com.safefood.Main</mainClass>
+                </configuration>
+            </plugin>
+
+            <!-- mvn javafx:run 으로 GUI 실행.
+                 ⚠️ 아래 mainClass는 javafx.application.Application을 상속해야 동작합니다.
+                    MainGui가 아직 빈 클래스라, GUI를 만들기 전에는 이 명령이 실패합니다. -->
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>${javafx.plugin.version}</version>
+                <configuration>
+                    <mainClass>com.safefood.view.MainGui</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- 개발 환경 설정 마법사: mvn compile exec:java -Pwizard -->
+        <profile>
+            <id>wizard</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <configuration>
+                            <mainClass>com.safefood.setup.SetupWizard</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

@@ -24,4 +24,4 @@
  *   <li>DB에는 방장 쪽에서만 접근합니다. 참여자는 소켓으로만 대화하므로 MySQL이 없어도 참여할 수 있습니다.</li>
  * </ul>
  */
-package com.foodmate.network;
+package com.safefood.network;
