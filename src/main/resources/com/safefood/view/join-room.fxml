@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.safefood.view.controller.JoinRoomController"
+      fx:id="root" prefWidth="460" styleClass="screen" spacing="16">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <VBox spacing="4">
+        <Label text="방 참여하기" styleClass="page-title"/>
+        <Label text="전달받은 접속 주소와 초대 코드를 입력하세요."
+               styleClass="page-subtitle" wrapText="true"/>
+        <Separator/>
+    </VBox>
+
+    <VBox styleClass="card" spacing="10">
+        <VBox spacing="4">
+            <Label text="접속 주소" styleClass="field-label"/>
+            <TextField fx:id="addressField" promptText="예) 192.168.0.11:5000"/>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="초대 코드" styleClass="field-label"/>
+            <TextField fx:id="codeField" promptText="전달받은 초대 코드"/>
+        </VBox>
+
+        <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"
+               visible="false" managed="false"/>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <ProgressIndicator fx:id="progress" prefWidth="18" prefHeight="18" visible="false"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="joinButton" text="그룹 참여" styleClass="primary" onAction="#handleJoin"/>
+        </HBox>
+    </VBox>
+</VBox>

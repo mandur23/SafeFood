@@ -89,7 +89,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>${javafx.plugin.version}</version>
                 <configuration>
-                    <mainClass>com.safefood.view.LoadingFX</mainClass>
+                    <mainClass>com.safefood.view.indexUi</mainClass>
                 </configuration>
             </plugin>
         </plugins>

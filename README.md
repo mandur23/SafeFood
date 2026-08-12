@@ -162,7 +162,12 @@ SafeFood/
 │   │   │   │   ├── Room                   # 접속자 목록 · 브로드캐스트 · 투표 집계
 │   │   │   │   ├── GroupClient            # 소켓 + 수신 스레드 (방장도 자기 서버에 접속)
 │   │   │   │   └── Message                # 프로토콜 메시지 (타입 + 본문) 파싱·생성
-│   │   │   ├── view/                      # 화면 출력 / 입력 처리
+│   │   │   ├── view/                      # 화면 (JavaFX FXML + CSS)
+│   │   │   │   ├── indexUi                # 앱 진입점 — mvn javafx:run
+│   │   │   │   ├── AppLauncher            # IntelliJ ▶ 실행용 시작 클래스
+│   │   │   │   ├── AppNav                 # FXML 불러오기 · 화면 전환 · Alert
+│   │   │   │   ├── Widgets · DemoData     # 동적 노드 · 임시 데이터
+│   │   │   │   └── controller/            # 화면 하나당 컨트롤러 하나 (SC-01~SC-14)
 │   │   │   └── setup/                     # 개발 환경 설정 마법사 (DB·data/·설정 파일 자동 준비)
 │   │   │       ├── SetupWizardFx          # 창(JavaFX) 화면 — mvn javafx:run -Pwizard-fx
 │   │   │       ├── SetupWizardFxLauncher  # 창 화면의 IntelliJ ▶ 실행용 시작 클래스
@@ -170,6 +175,9 @@ SafeFood/
 │   │   │       ├── Ui                     # 콘솔 출력·입력
 │   │   │       └── core/                  # 화면 없이 도는 처리부 (두 화면이 공유)
 │   │   └── resources/                     # 빌드 시 target/classes로 복사되는 리소스
+│   │       └── com/safefood/
+│   │           ├── view/                  # 화면 FXML 13개 + app.css
+│   │           └── setup/                 # setup-wizard.css
 │   └── test/
 │       └── java/com/safefood/             # 테스트 코드 (JUnit 5)
 ├── data/                                  # DB 미사용 시 파일 저장소
