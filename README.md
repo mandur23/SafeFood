@@ -21,23 +21,40 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 
 <br>
 
+## 📄 설계 문서
+
+기능 · 화면 · 데이터 구조의 **기준 문서**입니다. 구현 전에 해당 문서를 먼저 보세요.
+
+| 문서 | 버전 | 다루는 내용 |
+|------|------|-------------|
+| 기능 설계서 | v2.0 | 기능 48개(A/R/G/S/L/M/H), 구현 우선순위 1~3차, 소켓 프로토콜, 추천·병합 알고리즘 |
+| 데이터베이스 설계서 | v2.0 | 테이블 18개 · 외래 키 26개, 컬럼 정의, ENUM, 시드 데이터, 쿼리 시나리오 |
+| UI 설계서 | v2.0 | 화면 14종(SC-01~SC-14), 화면 전이, 색상 팔레트, 공통 컴포넌트 규칙 |
+| [SetupWizard.md](docs/SetupWizard.md) | — | 개발 환경 설정 마법사 사용법, `data/` 파일 모드 |
+
+기능 ID(`A-01`, `G-03` …)와 화면 ID(`SC-04` …)로 세 문서가 서로를 참조합니다.
+커밋 메시지와 브랜치 이름에도 기능 ID를 쓰면 추적하기 쉽습니다.
+
+<br>
+
 ## 🛠️ 기술 스택
 
 | 구분 | 사용 기술 |
 |------|-----------|
 | Language | Java 21 <!-- 바꾸려면 pom.xml의 maven.compiler.release 값만 수정 --> |
+| UI | **JavaFX 21.0.4** — `javafx-controls`, `javafx-fxml` |
 | Database | MySQL 8.0 **또는** 로컬 파일 (`data/`) |
-| DB 연동 | JDBC (MySQL Connector/J) / 파일 I/O (`data/public`, `data/private`) |
-| 실시간 통신 | Java Socket (TCP) — `ServerSocket` / `Socket`, 클라이언트별 스레드 |
-| 지도 | Kakao Map API <!-- 또는 Naver Map API — 택 1 후 정리 --> |
+| DB 연동 | JDBC (MySQL Connector/J 8.4.0) / 파일 I/O (`data/public`, `data/private`) |
+| 실시간 통신 | Java Socket (TCP), 기본 포트 5000 — 방장 앱이 곧 서버 |
+| 지도 | Kakao Map API <!-- 또는 Naver Map API — 택 1 후 정리 -->, JavaFX `WebView`에 임베드 |
 | Build | Maven (`pom.xml`) — 표준 디렉터리 레이아웃 |
 | IDE | IntelliJ IDEA |
-| 협업 | Git, GitHub |
+| 협업 | Git, GitHub (feature 브랜치 → PR 리뷰 → dev 병합) |
 
-> ⚠️ **UI 형태 결정 필요**
-> 지도 표시(#3)와 외부 지도 앱 연동(#11)은 **콘솔 앱으로는 구현이 어렵습니다.**
-> 지도를 쓰려면 **웹(Spring Boot + HTML/JS)** 또는 **Swing/JavaFX GUI** 중 하나를 골라야 합니다.
-> 결정 후 이 표와 [시작하기](#-시작하기)의 실행 방법을 갱신하세요.
+> ✅ **UI는 JavaFX 데스크톱 앱으로 확정했습니다.**
+> 지도 표시(#3)와 외부 지도 앱 연동(#11)은 콘솔로 구현할 수 없어서 GUI가 필요했고,
+> 지도는 `WebView`에 지도 API의 JS SDK 페이지를 띄우는 방식으로 갑니다.
+> 화면 정의는 UI 설계서를, 화면별 구현 기능은 기능 설계서를 보세요.
 
 <br>
 
@@ -76,7 +93,7 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 - [ ] ⭐ **모두가 먹을 수 있는 메뉴 추천** — 한 명이라도 못 먹는 메뉴는 후보에서 제외
 - [ ] **중간 지점 기준 검색** — 참여자들의 위치 중심으로 맛집 탐색
 - [ ] **후보 투표** — 추천 후보 3~5개를 놓고 참여자가 투표해 최종 결정
-- [ ] **그룹 추천 이유 설명** — "OO님 갑각류 알레르기 제외 / 전원 선호 한식 / 예산 1만 원 이하"
+- [ ] **그룹 추천 이유 설명** — "OO님 새우 알레르기 제외 / 전원 선호 한식 / 예산 1만 원 이하"
 - [ ] **제외 사유 표시** — 특정 메뉴가 왜 빠졌는지, 누구의 조건 때문인지 안내
 - [ ] **그룹 히스토리** — 이 그룹으로 먹었던 메뉴 기록 (다음에 중복 방지)
 
@@ -168,6 +185,9 @@ SafeFood/
 > 📦 **패키지(폴더)만 만들어 둔 상태입니다.**
 > `service/`·`network/` 아래 클래스 이름은 **앞으로 만들 예정 목록**이라 아직 파일이 없습니다.
 > 각 폴더의 `package-info.java`에 "여기엔 무엇을 넣는지"를 적어 뒀으니 작업 전에 한 번 읽어 보세요.
+
+> ⚠️ **`dto/`·`dao/`는 지금 저장소에 없습니다.** (8월 6일 커밋에서 삭제)
+> 위 계층 규칙(`view → service → dao`)을 유지하려면 두 패키지를 다시 만들어야 합니다.
 
 > 📌 **Java 파일은 반드시 `src/main/java/` 아래에 두세요.**
 > Maven은 이 경로만 소스로 인식합니다. 패키지 이름과 폴더 경로가 정확히 일치해야 하고
@@ -336,7 +356,16 @@ mvn compile exec:java
 
 ## 🗄️ 데이터베이스 스키마
 
-<!-- 아래는 초안입니다. 기능 확정 후 팀에서 함께 수정하세요 -->
+테이블 18개 · 외래 키 26개. **데이터베이스 설계서 v2.0**이 기준입니다.
+
+> ⚠️ **같은 스키마가 세 곳에 있습니다. 고칠 때는 셋을 함께 고쳐 주세요.**
+> 하나만 고치면 다음 사람이 틀린 쪽을 믿게 됩니다.
+>
+> | 위치 | 성격 |
+> |------|------|
+> | `src/main/java/com/safefood/setup/core/Schema.java` | 실제로 실행되는 코드 |
+> | 아래 이 절 | 사람이 읽는 문서 |
+> | 데이터베이스 설계서 (테이블 정의서 · 부록 A) | 설계 기준 |
 
 > MySQL을 쓰지 않을 때는 아래 테이블 대신 `data/` 파일을 씁니다.
 > - 마스터성 데이터 → `data/public/`
@@ -357,11 +386,12 @@ CREATE TABLE user (
 
 -- 취향 (회원당 1행)
 CREATE TABLE user_preference (
-    user_id     INT PRIMARY KEY,
+    user_id     INT NOT NULL,
     spicy_level TINYINT,                        -- 0(안 매움) ~ 5(아주 매움)
     price_min   INT,
     price_max   INT,
-    max_distance INT,                           -- 최대 거리(m)
+    max_distance INT,                           -- 최대 거리(m). 0은 제한 없음
+    PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
@@ -376,18 +406,25 @@ CREATE TABLE user_category (
 -- 알레르기 목록 (공통 마스터)
 CREATE TABLE allergy (
     id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE            -- 우유 / 땅콩 / 갑각류 / 계란 ...
+    name VARCHAR(30) NOT NULL UNIQUE            -- 우유 / 계란 / 땅콩 / 새우 ... (식약처 고시 19종)
 );
 
 -- 회원별 보유 알레르기
 CREATE TABLE user_allergy (
     user_id     INT NOT NULL,
     allergy_id  INT NOT NULL,
+    severity    TINYINT NOT NULL DEFAULT 3,     -- 심각도 1(거의 없음) ~ 5(극도로 높음)
     PRIMARY KEY (user_id, allergy_id),
     FOREIGN KEY (user_id)    REFERENCES user(id),
     FOREIGN KEY (allergy_id) REFERENCES allergy(id)
 );
 ```
+
+> 알레르기 마스터는 **새우 · 게 · 조개류를 개별 항목**으로 둡니다.
+> "갑각류" 같은 묶음 항목은 쓰지 않습니다. (UI에서도 19종을 그대로 노출)
+>
+> `severity`는 POSSIBLE 등급 메뉴의 **감점 폭**에 씁니다.
+> 같은 땅콩 알레르기라도 심각도가 높은 사용자에게는 혼입 가능 메뉴의 순위를 크게 낮춥니다.
 
 ### 맛집 · 메뉴
 
@@ -402,7 +439,9 @@ CREATE TABLE restaurant (
     open_time   TIME,
     close_time  TIME,
     latitude    DECIMAL(10, 7),                 -- 위도 (지도 표시용)
-    longitude   DECIMAL(10, 7)                  -- 경도
+    longitude   DECIMAL(10, 7),                 -- 경도
+    rating       DECIMAL(2, 1),                 -- 평점 0.0~5.0 (지도 API 응답값)
+    review_count INT DEFAULT 0                  -- 리뷰 수
 );
 
 -- 메뉴
@@ -522,14 +561,15 @@ CREATE TABLE favorite (
     FOREIGN KEY (menu_id)       REFERENCES menu(id)
 );
 
--- 히스토리 (추천 / 먹음 / 조회)
+-- 히스토리 (추천 / 먹음 / 조회 / 차단)
 -- 'EATEN' 기록으로 전날 먹은 메뉴 중복 제외를 판정합니다
+-- 'BLOCKED'는 알레르기(CONTAINS)로 제외된 메뉴 — 차단 이력 조회와 대체 메뉴 추천의 근거
 CREATE TABLE history (
     id         INT AUTO_INCREMENT PRIMARY KEY,
     user_id    INT NOT NULL,
     menu_id    INT NOT NULL,
     group_id   INT,                             -- 그룹으로 먹은 경우 (개인 추천이면 NULL)
-    type       ENUM('RECOMMENDED', 'EATEN', 'VIEWED') NOT NULL,
+    type       ENUM('RECOMMENDED', 'EATEN', 'VIEWED', 'BLOCKED') NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id)  REFERENCES user(id),
     FOREIGN KEY (menu_id)  REFERENCES menu(id),
@@ -755,9 +795,13 @@ CREATE TABLE feedback (
 - [x] 기능 목록 정리
 - [x] 개발 환경 설정 마법사 작성 (`com.safefood.setup`) — 콘솔 + JavaFX 창
 - [x] 패키지 구조 만들기 (`com.safefood`)
-- [ ] 애플리케이션 형태(웹 / GUI) 결정
-- [ ] 기능 우선순위 확정 (MVP 범위 정하기)
-- [ ] DB 스키마 확정 및 테이블 생성
+- [x] 애플리케이션 형태 결정 — **JavaFX 데스크톱 앱**
+- [x] 기능 우선순위 확정 (기능 48개를 1·2·3차로 구분)
+- [x] 설계 문서 작성 (기능 · DB · UI 설계서 v2.0)
+- [x] DB 스키마 확정 (테이블 18개 · 외래 키 26개)
+- [ ] `dto` · `dao` 패키지 다시 만들기 <!-- 8월 6일 커밋에서 삭제된 상태 -->
+- [ ] 지도 API 선택(Kakao / Naver) 및 키 발급
+- [ ] 테이블 생성 (팀원별 Setup Wizard 실행)
 - [ ] 소켓 메시지 프로토콜 확정
 - [ ] 역할 분담
 - [ ] 기능 구현

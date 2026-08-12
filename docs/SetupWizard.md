@@ -150,19 +150,22 @@ MySQL을 설치하지 않았거나, 드라이버·연결이 없어 DB 단계를 
 
 ```
 data/
-├── public/                     # 앱에 필요한 공통 데이터 (커밋 가능)
-│   ├── allergy.txt             # 알레르기 마스터
-│   ├── mood.txt                # 기분 태그 마스터
-│   ├── restaurant.txt          # 가게 마스터 (선택)
-│   └── menu.txt                # 메뉴 마스터 (선택)
-└── private/                    # 커밋 금지
-    ├── users.txt               # [개인] 회원·게스트
-    ├── preferences.txt         # [개인] 취향·예산·거리
-    ├── favorites.txt           # [개인] 즐겨찾기
-    ├── history.txt             # [개인] 내 추천 히스토리
-    ├── groups.txt              # [팀 서버] 그룹·초대 코드
-    ├── group_members.txt       # [팀 서버] 참여자·조건
-    └── votes.txt               # [팀 서버] 투표·결과
+├── public/                        # 앱에 필요한 공통 데이터 (커밋 가능)
+│   ├── allergy.txt                # 알레르기 마스터 19종
+│   ├── mood.txt                   # 기분 태그 마스터 10종
+│   ├── restaurant.txt             # 가게 마스터 (선택)
+│   └── menu.txt                   # 메뉴 마스터 (선택)
+└── private/                       # 커밋 금지
+    ├── users.txt                  # [개인] 회원·게스트
+    ├── preferences.txt            # [개인] 취향·예산·거리
+    ├── user_allergies.txt         # [개인] 보유 알레르기 + 심각도
+    ├── categories.txt             # [개인] 선호 음식 종류
+    ├── favorites.txt              # [개인] 즐겨찾기
+    ├── history.txt                # [개인] 내 추천 히스토리
+    ├── groups.txt                 # [팀 서버] 그룹·초대 코드
+    ├── group_members.txt          # [팀 서버] 참여자·조건
+    ├── group_member_allergies.txt # [팀 서버] 참여 시점 알레르기 스냅샷
+    └── votes.txt                  # [팀 서버] 투표·결과
 ```
 
 > 파일이 없으면 마법사(또는 앱 최초 실행)가 **기본 내용으로 새로 만듭니다.**
@@ -181,20 +184,32 @@ data/
 > 레코드로 읽힙니다. 그래서 마법사가 만드는 기본 파일에도 주석이 없습니다.
 
 **필드 순서** — `core/Schema.java`의 테이블 컬럼 순서와 같습니다.
+(데이터베이스 설계서의 테이블 정의서와도 같아야 합니다)
 
-| 파일 | 필드 |
-|------|------|
-| `public/allergy.txt` | `name` |
-| `public/mood.txt` | `name` |
-| `public/restaurant.txt` | `id\|name\|category\|address\|phone\|open_time\|close_time\|latitude\|longitude` |
-| `public/menu.txt` | `id\|restaurant_id\|name\|price\|category\|spicy_level\|description` |
-| `private/users.txt` | `id\|login_id\|password\|nickname\|created_at` |
-| `private/preferences.txt` | `user_id\|spicy_level\|price_min\|price_max\|max_distance` |
-| `private/favorites.txt` | `id\|user_id\|restaurant_id\|menu_id\|created_at` |
-| `private/history.txt` | `id\|user_id\|menu_id\|group_id\|type\|created_at` |
-| `private/groups.txt` | `id\|name\|owner_id\|invite_code\|status\|created_at` |
-| `private/group_members.txt` | `id\|group_id\|user_id\|guest_name\|latitude\|longitude\|joined_at` |
-| `private/votes.txt` | `candidate_id\|member_id\|voted_at` |
+| 파일 | 대응 테이블 | 필드 |
+|------|------------|------|
+| `public/allergy.txt` | `allergy` | `name` |
+| `public/mood.txt` | `mood` | `name` |
+| `public/restaurant.txt` | `restaurant` | `id\|name\|category\|address\|phone\|open_time\|close_time\|latitude\|longitude\|rating\|review_count` |
+| `public/menu.txt` | `menu` | `id\|restaurant_id\|name\|price\|category\|spicy_level\|description` |
+| `private/users.txt` | `user` | `id\|login_id\|password\|nickname\|created_at` |
+| `private/preferences.txt` | `user_preference` | `user_id\|spicy_level\|price_min\|price_max\|max_distance` |
+| `private/user_allergies.txt` | `user_allergy` | `user_id\|allergy_id\|severity` |
+| `private/categories.txt` | `user_category` | `user_id\|category` |
+| `private/favorites.txt` | `favorite` | `id\|user_id\|restaurant_id\|menu_id\|created_at` |
+| `private/history.txt` | `history` | `id\|user_id\|menu_id\|group_id\|type\|created_at` |
+| `private/groups.txt` | `dining_group` | `id\|name\|owner_id\|invite_code\|status\|created_at` |
+| `private/group_members.txt` | `group_member` | `id\|group_id\|user_id\|guest_name\|latitude\|longitude\|joined_at` |
+| `private/group_member_allergies.txt` | `group_member_allergy` | `member_id\|allergy_id` |
+| `private/votes.txt` | `group_vote` | `candidate_id\|member_id\|voted_at` |
+
+ENUM 값도 DB와 같게 씁니다.
+
+| 필드 | 허용 값 |
+|------|---------|
+| `history.type` | `RECOMMENDED` · `EATEN` · `VIEWED` · `BLOCKED` |
+| `dining_group.status` | `OPEN` · `VOTING` · `CLOSED` |
+| `user_allergy.severity` | `1`(거의 없음) ~ `5`(극도로 높음), 기본 `3` |
 
 예시 (`data/public/allergy.txt` — 마법사가 만드는 기본 내용):
 
@@ -299,8 +314,13 @@ com.safefood.setup (화면)  ──→  com.safefood.setup.core (처리)
 
 ## ⚠️ 스키마를 고칠 때
 
-`setup/core/Schema.java`와 README의 데이터베이스 스키마 절을 **둘 다** 고쳐 주세요.
-(README는 사람이 읽는 문서, `Schema.java`는 실제로 실행되는 코드)
+같은 스키마가 **세 곳**에 있습니다. 하나만 고치면 다음 사람이 틀린 쪽을 믿게 됩니다.
+
+| 위치 | 성격 |
+|------|------|
+| `setup/core/Schema.java` | 실제로 실행되는 코드 |
+| README의 **데이터베이스 스키마** 절 | 사람이 읽는 문서 |
+| 데이터베이스 설계서 (테이블 정의서 · 부록 A) | 설계 기준 |
 
 마스터 목록(알레르기·기분 태그)은 `data/public/`의 기본 파일도 `Schema.java`에서 가져다 쓰므로
 **따로 맞출 필요가 없습니다.** 다만 이미 만들어진 `allergy.txt`·`mood.txt`는 덮어쓰지 않으니,
@@ -322,6 +342,48 @@ DROP DATABASE safefood;
 
 > 마법사는 **어떤 것도 지우지 않습니다.** 삭제는 위처럼 직접 실행하세요.
 > `data/private/`를 초기화하려면 해당 파일을 지운 뒤 마법사(또는 앱)를 다시 실행하면 됩니다.
+
+<br>
+
+## 🔄 이미 DB를 만든 팀원이라면 (v2.0 스키마)
+
+데이터베이스 설계서 v2.0에서 컬럼 3개와 ENUM 값 1개가 늘었습니다.
+**이전에 마법사를 돌려 테이블이 이미 있는 팀원**은 마법사를 다시 실행해도
+`CREATE TABLE IF NOT EXISTS`가 건너뛰므로 새 컬럼이 생기지 않습니다.
+아래를 한 번 실행해 주세요. (처음 설치하는 팀원은 그냥 마법사만 실행하면 됩니다)
+
+```sql
+USE safefood;
+
+ALTER TABLE user_allergy
+    ADD COLUMN severity TINYINT NOT NULL DEFAULT 3;
+
+ALTER TABLE restaurant
+    ADD COLUMN rating       DECIMAL(2,1) NULL,
+    ADD COLUMN review_count INT NULL DEFAULT 0;
+
+ALTER TABLE history
+    MODIFY COLUMN type ENUM('RECOMMENDED', 'EATEN', 'VIEWED', 'BLOCKED') NOT NULL;
+```
+
+| 변경 | 왜 필요한가 |
+|------|-------------|
+| `user_allergy.severity` | 프로필 화면(SC-07)의 심각도 Class 1~5를 저장할 곳이 없었음 |
+| `restaurant.rating` · `review_count` | 즐겨찾기 화면(SC-06-b)의 ★ 평점·리뷰 수를 저장할 곳이 없었음 |
+| `history.type`에 `BLOCKED` | 기록 화면(SC-06)의 '차단됨' 상태에 대응하는 값이 없었음 |
+
+내가 어느 쪽인지 확인하려면:
+
+```sql
+SHOW COLUMNS FROM user_allergy LIKE 'severity';
+```
+
+결과가 비어 있으면 위 ALTER를 실행해야 합니다.
+
+> `data/` 파일 모드를 쓰고 있었다면 ALTER는 필요 없습니다.
+> 다만 새로 생긴 `user_allergies.txt`·`categories.txt`·`group_member_allergies.txt`가
+> 없으므로, 마법사를 한 번 더 실행하면 빈 파일로 만들어 줍니다.
+> 기존 `restaurant.txt`에 데이터를 넣어 뒀다면 뒤에 `rating`·`review_count` 두 칸을 더해 주세요.
 
 <br>
 

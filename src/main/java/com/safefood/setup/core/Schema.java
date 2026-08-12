@@ -3,14 +3,20 @@ package com.safefood.setup.core;
 import java.util.List;
 
 /**
- * 테이블 정의와 기본 데이터.
+ * 테이블 정의와 기본 데이터. 기준 문서는 <b>SafeFood 데이터베이스 설계서 v2.0</b>의 부록 A(전체 DDL)입니다.
  *
- * <p>README의 <b>데이터베이스 스키마</b> 절과 같은 내용입니다.
- * 스키마를 바꿀 때는 <b>이 파일과 README를 함께</b> 고쳐 주세요.
+ * <p>같은 내용이 세 곳에 있습니다. 하나만 고치면 다음 사람이 틀린 쪽을 믿게 되므로
+ * <b>반드시 셋을 함께</b> 고쳐 주세요.
+ * <ol>
+ *   <li>이 파일 — 실제로 실행되는 코드</li>
+ *   <li>README의 <b>데이터베이스 스키마</b> 절 — 사람이 읽는 문서</li>
+ *   <li>데이터베이스 설계서 — 테이블 정의서와 부록 A</li>
+ * </ol>
  *
  * <p>모든 DDL은 {@code IF NOT EXISTS}라서 마법사를 여러 번 실행해도 기존 데이터가 지워지지 않습니다.
  * 대신 <b>이미 만들어진 테이블의 구조는 바뀌지 않습니다.</b>
- * 스키마를 수정한 뒤 반영하려면 해당 테이블을 직접 DROP 하고 다시 실행하세요.
+ * 스키마를 수정한 뒤 반영하려면 해당 테이블을 직접 DROP 하고 다시 실행하거나, ALTER로 직접 반영하세요.
+ * (설계서 10.1절에 v1.0 → v2.0 ALTER 문이 있습니다)
  */
 final class Schema {
 
@@ -37,11 +43,12 @@ final class Schema {
 
             new Table("user_preference", """
                     CREATE TABLE IF NOT EXISTS user_preference (
-                        user_id      INT PRIMARY KEY,
+                        user_id      INT NOT NULL,
                         spicy_level  TINYINT,
                         price_min    INT,
                         price_max    INT,
                         max_distance INT,
+                        PRIMARY KEY (user_id),
                         FOREIGN KEY (user_id) REFERENCES `user`(id)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                     """),
@@ -66,6 +73,7 @@ final class Schema {
                     CREATE TABLE IF NOT EXISTS user_allergy (
                         user_id    INT NOT NULL,
                         allergy_id INT NOT NULL,
+                        severity   TINYINT NOT NULL DEFAULT 3,
                         PRIMARY KEY (user_id, allergy_id),
                         FOREIGN KEY (user_id)    REFERENCES `user`(id),
                         FOREIGN KEY (allergy_id) REFERENCES allergy(id)
@@ -84,7 +92,9 @@ final class Schema {
                         open_time  TIME,
                         close_time TIME,
                         latitude   DECIMAL(10, 7),
-                        longitude  DECIMAL(10, 7)
+                        longitude  DECIMAL(10, 7),
+                        rating       DECIMAL(2, 1),
+                        review_count INT DEFAULT 0
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                     """),
 
@@ -213,7 +223,7 @@ final class Schema {
                         user_id    INT NOT NULL,
                         menu_id    INT NOT NULL,
                         group_id   INT,
-                        type       ENUM('RECOMMENDED', 'EATEN', 'VIEWED') NOT NULL,
+                        type       ENUM('RECOMMENDED', 'EATEN', 'VIEWED', 'BLOCKED') NOT NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (user_id)  REFERENCES `user`(id),
                         FOREIGN KEY (menu_id)  REFERENCES menu(id),

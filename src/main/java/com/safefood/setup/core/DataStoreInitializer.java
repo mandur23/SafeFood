@@ -40,7 +40,8 @@ final class DataStoreInitializer {
      * <ul>
      *   <li>{@code allergy.txt} — name</li>
      *   <li>{@code mood.txt} — name</li>
-     *   <li>{@code restaurant.txt} — id|name|category|address|phone|open_time|close_time|latitude|longitude</li>
+     *   <li>{@code restaurant.txt} —
+     *       id|name|category|address|phone|open_time|close_time|latitude|longitude|rating|review_count</li>
      *   <li>{@code menu.txt} — id|restaurant_id|name|price|category|spicy_level|description</li>
      * </ul>
      */
@@ -53,20 +54,27 @@ final class DataStoreInitializer {
      * <ul>
      *   <li>{@code users.txt} — id|login_id|password|nickname|created_at</li>
      *   <li>{@code preferences.txt} — user_id|spicy_level|price_min|price_max|max_distance</li>
+     *   <li>{@code user_allergies.txt} — user_id|allergy_id|severity (심각도 1~5, 기본 3)</li>
+     *   <li>{@code categories.txt} — user_id|category</li>
      *   <li>{@code favorites.txt} — id|user_id|restaurant_id|menu_id|created_at</li>
-     *   <li>{@code history.txt} — id|user_id|menu_id|group_id|type|created_at</li>
+     *   <li>{@code history.txt} — id|user_id|menu_id|group_id|type|created_at
+     *       (type = RECOMMENDED / EATEN / VIEWED / BLOCKED)</li>
      *   <li>{@code groups.txt} — id|name|owner_id|invite_code|status|created_at</li>
      *   <li>{@code group_members.txt} — id|group_id|user_id|guest_name|latitude|longitude|joined_at</li>
+     *   <li>{@code group_member_allergies.txt} — member_id|allergy_id (참여 시점 스냅샷)</li>
      *   <li>{@code votes.txt} — candidate_id|member_id|voted_at</li>
      * </ul>
      */
     private static final List<String> PRIVATE_FILES = List.of(
             "users.txt",
             "preferences.txt",
+            "user_allergies.txt",
+            "categories.txt",
             "favorites.txt",
             "history.txt",
             "groups.txt",
             "group_members.txt",
+            "group_member_allergies.txt",
             "votes.txt"
     );
 
