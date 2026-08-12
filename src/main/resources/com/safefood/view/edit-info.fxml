@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.safefood.view.controller.EditInfoController"
+      fx:id="root" prefWidth="460" styleClass="screen" spacing="16">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <VBox spacing="4">
+        <Label text="정보 변경" styleClass="page-title"/>
+        <Label text="닉네임과 비밀번호를 바꿉니다." styleClass="page-subtitle"/>
+        <Separator/>
+    </VBox>
+
+    <VBox styleClass="card" spacing="10">
+        <VBox spacing="4">
+            <Label text="현재 비밀번호" styleClass="field-label"/>
+            <PasswordField fx:id="currentPassword" promptText="본인 확인을 위해 현재 비밀번호를 입력하세요"/>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="닉네임" styleClass="field-label"/>
+            <HBox spacing="8">
+                <TextField fx:id="nicknameField" promptText="변경할 닉네임" HBox.hgrow="ALWAYS"/>
+                <Button text="중복 확인" onAction="#handleCheckNickname"/>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="새 비밀번호" styleClass="field-label"/>
+            <PasswordField fx:id="newPassword" promptText="비워 두면 비밀번호는 그대로 둡니다"/>
+        </VBox>
+
+        <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"
+               visible="false" managed="false"/>
+    </VBox>
+
+    <HBox spacing="8" alignment="CENTER_RIGHT">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="취소" onAction="#handleCancel"/>
+        <Button text="정보 변경 저장" styleClass="primary" onAction="#handleSave"/>
+    </HBox>
+</VBox>

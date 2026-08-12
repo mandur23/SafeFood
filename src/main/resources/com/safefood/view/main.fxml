@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  SC-04 메인 — 개인 맞춤 추천 결과 — 기능 R-01~R-08 · L-02~L-04
+
+  로그인 후 들어오는 주 화면. 상단 내비게이션, 필터, 추천 카드, 하단 그룹 진입 버튼.
+  추천 카드는 개수가 데이터에 따라 달라져서 컨트롤러가 채웁니다.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.safefood.view.controller.MainController">
+
+    <!-- 상단 내비게이션. 현재 위치만 주황 채움 -->
+    <top>
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="toolbar">
+            <ImageView fitHeight="32" fitWidth="32">
+                <image>
+                    <Image url="@/data/public/icon/logo.png"/>
+                </image>
+            </ImageView>
+            <Button text="1. 메뉴 선택" styleClass="nav-button, active"/>
+            <Button text="2. 내 정보" styleClass="nav-button" onAction="#handleProfile"/>
+            <Button text="3. 기록" styleClass="nav-button" onAction="#handleHistory"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="사용자님 로그인 중" styleClass="sub"/>
+            <Button text="로그아웃" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true">
+            <VBox styleClass="screen" spacing="16">
+                <padding>
+                    <Insets top="24" right="24" bottom="24" left="24"/>
+                </padding>
+
+                <!-- 실시간 필터 -->
+                <VBox styleClass="card" spacing="10">
+                    <HBox spacing="12" alignment="BOTTOM_LEFT">
+                        <VBox spacing="4">
+                            <Label text="음식 종류" styleClass="field-label"/>
+                            <ComboBox fx:id="categoryBox"/>
+                        </VBox>
+                        <VBox spacing="4">
+                            <Label text="거리" styleClass="field-label"/>
+                            <ComboBox fx:id="distanceBox"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="다른 추천 보기" onAction="#handleReroll"/>
+                        <Button text="룰렛 추천" styleClass="primary" onAction="#handleRoulette"/>
+                    </HBox>
+
+                    <Label text="기분 · 컨디션" styleClass="field-label"/>
+                    <FlowPane fx:id="moodPane" styleClass="chip-area" hgap="8" vgap="8"/>
+                    <CheckBox fx:id="excludeEaten" text="어제 먹은 메뉴 제외 (제육볶음)" selected="true"/>
+                </VBox>
+
+                <Label text="오늘의 추천" styleClass="section-title"/>
+                <!-- 추천 카드가 여기에 채워집니다 -->
+                <VBox fx:id="cardBox" spacing="12"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- 같이 먹기 — 화면 하단 전체 폭 -->
+    <bottom>
+        <HBox styleClass="toolbar">
+            <Button text="같이 먹기 (그룹 방 참여/생성)" styleClass="primary"
+                    maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#handleGroup"/>
+        </HBox>
+    </bottom>
+</BorderPane>
