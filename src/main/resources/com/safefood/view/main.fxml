@@ -26,9 +26,9 @@
     <!-- 상단 내비게이션. 현재 위치만 주황 채움 -->
     <top>
         <HBox spacing="8" alignment="CENTER_LEFT" styleClass="toolbar">
-            <ImageView fitHeight="32" fitWidth="32">
+            <ImageView fitHeight="32" fitWidth="32" preserveRatio="true">
                 <image>
-                    <Image url="@/data/public/icon/logo.png"/>
+                    <Image url="@icon/logo.png"/>
                 </image>
             </ImageView>
             <Button text="1. 메뉴 선택" styleClass="nav-button, active"/>
