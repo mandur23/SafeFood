@@ -51,13 +51,15 @@
                 <PasswordField fx:id="passwordField" promptText="비밀번호를 입력하세요"/>
             </VBox>
 
-            <VBox spacing="4">
-                <Label text="닉네임 / 게스트 이름" styleClass="field-label"/>
-                <TextField fx:id="nameField" promptText="표시할 이름을 입력하세요"/>
+            <VBox fx:id="guestNameBox" spacing="4" visible="false" managed="false">
+                <Label text="게스트 이름" styleClass="field-label"/>
+                <TextField fx:id="nameField" promptText="게스트 이름을 입력하세요 (필수)"/>
             </VBox>
 
-            <Label text="비회원은 계정 가입 없이 이름 + 알레르기·취향 정보만 입력하여 그룹 방에 참여할 수 있습니다."
-                   styleClass="sub" wrapText="true"/>
+            <Label fx:id="guestHintLabel"
+                   text="비회원은 계정 가입 없이 이름 + 알레르기·취향 정보만 입력하여 그룹 방에 참여할 수 있습니다."
+                   styleClass="sub" wrapText="true"
+                   visible="false" managed="false"/>
 
             <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"
                    visible="false" managed="false"/>

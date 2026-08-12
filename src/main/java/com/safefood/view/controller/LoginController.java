@@ -11,6 +11,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.VBox;
 
 public class LoginController {
 
@@ -18,7 +19,9 @@ public class LoginController {
     @FXML private ToggleButton memberTab;
     @FXML private TextField idField;
     @FXML private PasswordField passwordField;
+    @FXML private VBox guestNameBox;
     @FXML private TextField nameField;
+    @FXML private Label guestHintLabel;
     @FXML private Button signUpButton;
     @FXML private Label errorLabel;
 
@@ -33,12 +36,20 @@ public class LoginController {
         });
 
         memberTab.selectedProperty().addListener((observable, before, isMember) -> {
-            idField.setDisable(!isMember);
-            passwordField.setDisable(!isMember);
-            signUpButton.setDisable(!isMember);
-            nameField.setPromptText(isMember ? "표시할 이름을 입력하세요" : "게스트 이름을 입력하세요 (필수)");
+            applyTabMode(isMember);
             Widgets.hideError(errorLabel);
         });
+        applyTabMode(memberTab.isSelected());
+    }
+
+    private void applyTabMode(boolean isMember) {
+        idField.setDisable(!isMember);
+        passwordField.setDisable(!isMember);
+        signUpButton.setDisable(!isMember);
+        guestNameBox.setVisible(!isMember);
+        guestNameBox.setManaged(!isMember);
+        guestHintLabel.setVisible(!isMember);
+        guestHintLabel.setManaged(!isMember);
     }
 
     @FXML
@@ -56,10 +67,6 @@ public class LoginController {
             if (user == null) {
                 Widgets.showError(errorLabel, "아이디 또는 비밀번호가 올바르지 않습니다.");
                 return;
-            }
-
-            if (nameField.getText().isBlank()) {
-                nameField.setText(user.getNickname());
             }
 
             Widgets.hideError(errorLabel);
