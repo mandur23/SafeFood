@@ -1,5 +1,7 @@
 package com.safefood.view.controller;
 
+import com.safefood.dto.UserDto;
+import com.safefood.service.AuthService;
 import com.safefood.view.AppNav;
 import com.safefood.view.Widgets;
 import javafx.fxml.FXML;
@@ -20,9 +22,10 @@ public class LoginController {
     @FXML private Button signUpButton;
     @FXML private Label errorLabel;
 
+    private final AuthService authService = new AuthService();
+
     @FXML
     private void initialize() {
-
         tabGroup.selectedToggleProperty().addListener((observable, before, after) -> {
             if (after == null && before != null) {
                 tabGroup.selectToggle(before);
@@ -41,9 +44,22 @@ public class LoginController {
     @FXML
     private void handleLogin() {
         if (memberTab.isSelected()) {
-            if (idField.getText().isBlank() || passwordField.getText().isBlank()) {
+            String loginId = idField.getText().trim();
+            String password = passwordField.getText();
+
+            if (loginId.isBlank() || password.isBlank()) {
                 Widgets.showError(errorLabel, "아이디와 비밀번호를 입력해 주세요.");
                 return;
+            }
+
+            UserDto user = authService.login(loginId, password);
+            if (user == null) {
+                Widgets.showError(errorLabel, "아이디 또는 비밀번호가 올바르지 않습니다.");
+                return;
+            }
+
+            if (nameField.getText().isBlank()) {
+                nameField.setText(user.getNickname());
             }
 
             Widgets.hideError(errorLabel);
@@ -54,7 +70,6 @@ public class LoginController {
                 return;
             }
             Widgets.hideError(errorLabel);
-
             AppNav.dialog("같이 먹기 옵션 선택", "group-option.fxml");
         }
     }

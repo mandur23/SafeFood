@@ -1,7 +1,13 @@
 package com.safefood;
 
-public class MainLauncher {
+import javafx.application.Application;
+
+public final class MainLauncher {
+
+    private MainLauncher() {
+    }
+
     public static void main(String[] args) {
-        Main.main(args);
+        Application.launch(Main.class, args);
     }
 }
