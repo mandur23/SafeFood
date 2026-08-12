@@ -28,7 +28,7 @@ public final class AppNav {
     private AppNav() {
     }
 
-    static void init(Stage primaryStage) {
+    public static void init(Stage primaryStage) {
         stage = primaryStage;
         stage.setMinWidth(1000);
         stage.setMinHeight(640);
