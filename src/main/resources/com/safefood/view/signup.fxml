@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15" alignment="CENTER_LEFT" prefWidth="400" prefHeight="500"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.safefood.view.SignupController">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <Label text="회원가입" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+    <Separator/>
+
+    <Label text="아이디 (ID)"/>
+    <HBox spacing="10">
+        <TextField fx:id="loginIdField" promptText="아이디를 입력하세요" HBox.hgrow="ALWAYS"/>
+        <Button text="중복 확인" onAction="#handleCheckDuplicateId"/>
+    </HBox>
+
+    <Label text="비밀번호 (PassWord)"/>
+    <PasswordField fx:id="passwordField"/>
+
+    <Label text="비밀번호 확인"/>
+    <PasswordField fx:id="passwordConfirmField"/>
+
+    <Label text="닉네임"/>
+    <TextField fx:id="nicknameField" promptText="사용할 닉네임을 입력하세요"/>
+
+    <!-- 하단 여백용 -->
+    <Region VBox.vgrow="ALWAYS" />
+
+    <Button text="회원가입 완료" onAction="#handleSignup"
+            prefWidth="Infinity" prefHeight="40"
+            style="-fx-background-color: #C4551D; -fx-text-fill: white; -fx-font-weight: bold;"/>
+</VBox>
