@@ -18,16 +18,19 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.safefood.view.controller.MainController">
 
     <!-- 상단 내비게이션. 현재 위치만 주황 채움 -->
     <top>
         <HBox spacing="8" alignment="CENTER_LEFT" styleClass="toolbar">
-            <Image viewPort="0 0 100 100">
-                <Image src="/data/public/icon/logo.png"/>
-            </Image>
+            <ImageView fitHeight="32" fitWidth="32">
+                <image>
+                    <Image url="@/data/public/icon/logo.png"/>
+                </image>
+            </ImageView>
             <Button text="1. 메뉴 선택" styleClass="nav-button, active"/>
             <Button text="2. 내 정보" styleClass="nav-button" onAction="#handleProfile"/>
             <Button text="3. 기록" styleClass="nav-button" onAction="#handleHistory"/>
