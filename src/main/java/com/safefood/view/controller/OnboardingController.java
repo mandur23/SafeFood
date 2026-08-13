@@ -79,8 +79,8 @@ public class OnboardingController {
     @FXML
     private void handleStart() {
         // 1. 방금 가입한 아이디로 실제 회원 번호(user_id)를 DB에서 찾아오기
-        com.safefood.dao.UserDao userDao = new com.safefood.dao.UserDao();
-        int currentUserId = userDao.findByLoginId(newUserId).getId();
+        com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
+        int currentUserId  = authService.getUserInfo(newUserId).getId();
 
         // 2. 취향 데이터 가져오기 및 파싱(숫자로 변환)
         int spicyLevel = (int) spicySlider.getValue(); // 이미 숫자(0~5)

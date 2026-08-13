@@ -22,6 +22,17 @@ public class AuthService {
         return userDao.findByLoginId(loginId) == null;
     }
 
+
+    /**
+     * 로그인 아이디로 회원정보 조회
+     * >> view가 DB를 알고싶을 때 service에게 물어보도록 함
+     */
+
+    public UserDto getUserInfo(String loginId){
+        return userDao.findByLoginId(loginId);
+    }
+
+
     /**
      * 회원 가입 처리
      * 비밀번호를 암호화하여 DB에 저장합니다.
