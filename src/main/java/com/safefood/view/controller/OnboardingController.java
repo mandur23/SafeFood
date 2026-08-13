@@ -80,7 +80,15 @@ public class OnboardingController {
     private void handleStart() {
         // 1. 방금 가입한 아이디로 실제 회원 번호(user_id)를 DB에서 찾아오기
         com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
-        int currentUserId  = authService.getUserInfo(newUserId).getId();
+
+        // 방금 가입한 유저정보 뽑기
+        com.safefood.dto.UserDto user = authService.getUserInfo(newUserId);
+
+        // 세션 로그인 상태 등록
+        com.safefood.dto.Session.setCurrentUser(user);
+
+        // 번호 꺼냄
+        int currentUserId = user.getId();
 
         // 2. 취향 데이터 가져오기 및 파싱(숫자로 변환)
         int spicyLevel = (int) spicySlider.getValue(); // 이미 숫자(0~5)

@@ -76,6 +76,9 @@ public class LoginController {
                 return;
             }
 
+            // Session에 정보 보관
+            com.safefood.dto.Session.setCurrentUser(user);
+
             if (nameField.getText().isBlank()) {
                 nameField.setText(user.getNickname());
             }

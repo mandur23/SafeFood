@@ -1,5 +1,6 @@
 package com.safefood.view.controller;
 
+import com.safefood.service.ProfileService;
 import com.safefood.view.AppNav;
 import com.safefood.view.DemoData;
 import com.safefood.view.Widgets;
@@ -17,6 +18,7 @@ import javafx.scene.layout.HBox;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ProfileController {
 
@@ -36,41 +38,66 @@ public class ProfileController {
 
     @FXML
     private void initialize() {
+        // 로그인이 안되면 띄우지 않음
+        if(com.safefood.dto.Session.getCurrentUser() == null){
+            return;
+        }
 
-        addOwned("새우", 5);
-        addOwned("땅콩", 4);
-        addOwned("우유", 2);
+        int myId = com.safefood.dto.Session.getCurrentUser().getId();
+        com.safefood.service.ProfileService profileService = new com.safefood.service.ProfileService();
+        
+        // 내 알레르기 불러와서 화면에 추가
+        Map<String, Integer> myAllergies = profileService.getMyAllergies(myId);
+        if(myAllergies != null){
+            for (Map.Entry<String, Integer> entry : myAllergies.entrySet()) {
+                addOwned(entry.getKey(), entry.getValue());
+            }
+        }
 
-        for (int i = 1; i <= 5; i++) {
+        // 심각도
+        for (int i = 1; i <= 5; i++){
             ToggleButton level = Widgets.chip("Class " + i);
             level.setToggleGroup(severityGroup);
             level.setUserData(i);
-            if (i == 3) {
-                level.setSelected(true);
-            }
+            if( i == 3) level.setSelected(true);
             severityPane.getChildren().add(level);
         }
 
+        // 내 카테고리(선호 음식) 불러오기, 체크
         Widgets.fillChips(categoryPane, DemoData.CATEGORIES, categoryChips);
-        categoryChips.get(0).setSelected(true);
-
-        distanceBox.getItems().setAll(DemoData.DISTANCES);
-        distanceBox.setValue("1km");
-
-        priceMin.valueProperty().addListener((observable, before, after) -> syncPrice());
-        priceMax.valueProperty().addListener((observable, before, after) -> syncPrice());
-        syncPrice();
-
-        spicySlider.valueProperty().addListener((observable, before, after) ->
-                spicyValue.setText((int) spicySlider.getValue() + "단계"));
-    }
-
-    private void syncPrice() {
-        if (priceMin.getValue() > priceMax.getValue()) {
-            priceMin.setValue(priceMax.getValue());
+        List<String> myCategories = profileService.getMyCategories(myId);
+        if(myCategories != null){
+            for (ToggleButton chip : categoryChips) {
+                if(myCategories.contains(chip.getText())){
+                    chip.setSelected(true);
+                }
+            }
         }
-        priceLabel.setText(String.format("%,d원 ~ %,d원",
-                (int) priceMin.getValue(), (int) priceMax.getValue()));
+
+        // 내 취향(에산, 매운맛, 거리) 불러오기
+        distanceBox.getItems().setAll(DemoData.DISTANCES); // 콤보박스 아이템 세팅
+        com.safefood.dto.PreferenceDto pref = profileService.getMyPreference(myId);
+        if(pref != null){
+            priceMax.setValue(pref.getPriceMax());
+            spicySlider.setValue(pref.getSpicyLevel());
+            
+            // 거리 콤보박스 세팅(DB 숫자를 텍스트로 변환
+            switch(pref.getMaxDistance()){
+                case 3000: distanceBox.getSelectionModel().select("3km"); break;
+                case 2000: distanceBox.getSelectionModel().select("2km"); break;
+                case 1000: distanceBox.getSelectionModel().select("1km"); break;
+                case 500: distanceBox.getSelectionModel().select("500m"); break;
+                default: distanceBox.getSelectionModel().select("제한없음"); break;
+            }
+
+            priceMin.valueProperty().addListener((observable, before, after) -> syncPrice());
+            priceMax.valueProperty().addListener((observable, before, after) -> syncPrice());
+            syncPrice();
+            spicySlider.valueProperty().addListener((observable, before, after) -> spicyValue.setText((int) spicySlider.getValue() + "단계"));
+            spicyValue.setText((int) spicySlider.getValue() + "단계");
+
+        }
+
     }
 
     private void addOwned(String name, int severity) {
@@ -134,5 +161,13 @@ public class ProfileController {
     @FXML
     private void handleLogout() {
         AppNav.show("로그인", "login.fxml");
+    }
+
+    private void syncPrice() {
+        if (priceMin.getValue() > priceMax.getValue()) {
+            priceMin.setValue(priceMax.getValue());
+        }
+        priceLabel.setText(String.format("%,d원 ~ %,d원",
+                (int) priceMin.getValue(), (int) priceMax.getValue()));
     }
 }
