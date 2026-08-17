@@ -1,5 +1,6 @@
 package com.safefood.view;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -83,12 +84,21 @@ public final class AppNav {
         }
     }
 
+    /**
+     * 다이얼로그 열기. 실제로 여는 시점은 {@code Platform.runLater}로 한 박자 미룹니다.
+     *
+     * <p>⚠️ 미루지 않으면: {@code close(root); dialog(...)}처럼 <b>이전 다이얼로그를 닫는 중에</b>
+     * 곧바로 다음 다이얼로그의 {@code showAndWait} 중첩 루프를 쌓으면, JavaFX가
+     * "루프에서 나가는 중" 상태에 갇혀 화면 갱신(렌더 펄스)을 포함한 {@code runLater} 배달을
+     * 전부 멈춥니다 → 새 창이 제목만 뜨고 내용은 하얗게 나옵니다. 미루면 이전 창의 루프가
+     * 완전히 빠져나간 뒤에 새 루프가 시작되어 안전합니다.
+     */
     public static void dialog(String title, String fxml) {
-        dialogRoot(title, load(fxml));
+        Platform.runLater(() -> dialogRoot(title, load(fxml)));
     }
 
     public static <C> void dialog(String title, String fxml, Consumer<C> initializer) {
-        dialogRoot(title, load(fxml, initializer));
+        Platform.runLater(() -> dialogRoot(title, load(fxml, initializer)));
     }
 
     private static void dialogRoot(String title, Parent root) {
@@ -111,16 +121,40 @@ public final class AppNav {
         }
     }
 
+    /**
+     * 다이얼로그가 창 닫기(X)로 닫힐 때 실행할 정리 동작을 등록합니다.
+     * 코드로 {@link #close(Node)}를 부른 경우(hide)에는 실행되지 않습니다 —
+     * 버튼으로 닫을 때와 X로 닫을 때의 정리를 다르게 하고 싶을 때 쓰세요.
+     */
+    public static void onDialogClosed(Node root, Runnable action) {
+        root.sceneProperty().addListener((sceneObs, oldScene, scene) -> {
+            if (scene == null) {
+                return;
+            }
+            if (scene.getWindow() != null) {
+                scene.getWindow().setOnCloseRequest(event -> action.run());
+            } else {
+                scene.windowProperty().addListener((winObs, oldWin, window) -> {
+                    if (window != null) {
+                        window.setOnCloseRequest(event -> action.run());
+                    }
+                });
+            }
+        });
+    }
+
+    // 알림창도 다이얼로그와 같은 이유로 미룹니다 — close() 직후 알림을 띄우는 코드가 안전해집니다.
+    // (예: 정보 변경 창을 닫으며 "변경되었습니다" 안내)
     public static void info(String message) {
-        alert(Alert.AlertType.INFORMATION, "안내", message);
+        Platform.runLater(() -> alert(Alert.AlertType.INFORMATION, "안내", message));
     }
 
     public static void warn(String message) {
-        alert(Alert.AlertType.WARNING, "확인해 주세요", message);
+        Platform.runLater(() -> alert(Alert.AlertType.WARNING, "확인해 주세요", message));
     }
 
     public static void error(String message) {
-        alert(Alert.AlertType.ERROR, "오류", message);
+        Platform.runLater(() -> alert(Alert.AlertType.ERROR, "오류", message));
     }
 
     public static boolean confirm(String message) {

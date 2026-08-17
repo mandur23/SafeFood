@@ -1,6 +1,7 @@
 package com.safefood.view.controller;
 
 import com.safefood.dto.UserDto;
+import com.safefood.network.GroupSession;
 import com.safefood.service.AuthService;
 import com.safefood.view.AppNav;
 import com.safefood.view.Widgets;
@@ -70,6 +71,11 @@ public class LoginController {
             }
 
             Widgets.hideError(errorLabel);
+            // 그룹 참여(소켓 JOIN) 때 쓸 표시 이름
+            GroupSession.get().setDisplayName(
+                    user.getNickname() == null || user.getNickname().isBlank()
+                            ? loginId : user.getNickname());
+            GroupSession.get().setGuest(false);
             AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
         } else {
             if (nameField.getText().isBlank()) {
@@ -77,6 +83,8 @@ public class LoginController {
                 return;
             }
             Widgets.hideError(errorLabel);
+            GroupSession.get().setDisplayName(nameField.getText());
+            GroupSession.get().setGuest(true);
             AppNav.dialog("같이 먹기 옵션 선택", "group-option.fxml");
         }
     }

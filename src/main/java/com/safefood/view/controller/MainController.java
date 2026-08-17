@@ -1,5 +1,6 @@
 package com.safefood.view.controller;
 
+import com.safefood.network.GroupSession;
 import com.safefood.view.AppNav;
 import com.safefood.view.DemoData;
 import com.safefood.view.Widgets;
@@ -26,11 +27,14 @@ public class MainController {
     @FXML private FlowPane moodPane;
     @FXML private CheckBox excludeEaten;
     @FXML private VBox cardBox;
+    @FXML private Label userLabel;
 
     private final List<ToggleButton> moodChips = new ArrayList<>();
 
     @FXML
     private void initialize() {
+        userLabel.setText(GroupSession.get().displayName() + "님 로그인 중");
+
         categoryBox.getItems().add("전체");
         categoryBox.getItems().addAll(DemoData.CATEGORIES);
         categoryBox.setValue("전체");
