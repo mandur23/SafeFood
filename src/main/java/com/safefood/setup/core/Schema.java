@@ -13,21 +13,24 @@ import java.util.List;
  *   <li>데이터베이스 설계서 — 테이블 정의서와 부록 A</li>
  * </ol>
  *
+ * <p>음식 사전 테이블(food·ingredient·food_ingredient·ingredient_allergy)은
+ * {@code com.safefood.tool.MenuGenImporter}도 DB 반영 전에 이 DDL을 재사용합니다.
+ *
  * <p>모든 DDL은 {@code IF NOT EXISTS}라서 마법사를 여러 번 실행해도 기존 데이터가 지워지지 않습니다.
  * 대신 <b>이미 만들어진 테이블의 구조는 바뀌지 않습니다.</b>
  * 스키마를 수정한 뒤 반영하려면 해당 테이블을 직접 DROP 하고 다시 실행하거나, ALTER로 직접 반영하세요.
  * (설계서 10.1절에 v1.0 → v2.0 ALTER 문이 있습니다)
  */
-final class Schema {
+public final class Schema {
 
     private Schema() {
     }
 
     /** 외래 키 때문에 만드는 순서가 중요해서 List로 관리합니다. */
-    record Table(String name, String ddl) {
+    public record Table(String name, String ddl) {
     }
 
-    static final List<Table> TABLES = List.of(
+    public static final List<Table> TABLES = List.of(
 
             // ── 회원 · 취향 · 알레르기 ──────────────────────
 
@@ -80,6 +83,45 @@ final class Schema {
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                     """),
 
+            // ── 음식 사전 · 재료 (공공데이터) ──────────────
+
+            new Table("food", """
+                    CREATE TABLE IF NOT EXISTS food (
+                        id       INT AUTO_INCREMENT PRIMARY KEY,
+                        food_cd  VARCHAR(20) NOT NULL UNIQUE,
+                        name     VARCHAR(100) NOT NULL,
+                        category VARCHAR(50)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                    """),
+
+            new Table("ingredient", """
+                    CREATE TABLE IF NOT EXISTS ingredient (
+                        id   INT AUTO_INCREMENT PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL UNIQUE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                    """),
+
+            new Table("food_ingredient", """
+                    CREATE TABLE IF NOT EXISTS food_ingredient (
+                        food_id       INT NOT NULL,
+                        ingredient_id INT NOT NULL,
+                        quantity      VARCHAR(50),
+                        PRIMARY KEY (food_id, ingredient_id),
+                        FOREIGN KEY (food_id)       REFERENCES food(id),
+                        FOREIGN KEY (ingredient_id) REFERENCES ingredient(id)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                    """),
+
+            new Table("ingredient_allergy", """
+                    CREATE TABLE IF NOT EXISTS ingredient_allergy (
+                        ingredient_id INT NOT NULL,
+                        allergy_id    INT NOT NULL,
+                        PRIMARY KEY (ingredient_id, allergy_id),
+                        FOREIGN KEY (ingredient_id) REFERENCES ingredient(id),
+                        FOREIGN KEY (allergy_id)    REFERENCES allergy(id)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                    """),
+
             // ── 맛집 · 메뉴 ────────────────────────────────
 
             new Table("restaurant", """
@@ -107,7 +149,9 @@ final class Schema {
                         category      VARCHAR(20),
                         spicy_level   TINYINT,
                         description   VARCHAR(255),
-                        FOREIGN KEY (restaurant_id) REFERENCES restaurant(id)
+                        food_id       INT,
+                        FOREIGN KEY (restaurant_id) REFERENCES restaurant(id),
+                        FOREIGN KEY (food_id)       REFERENCES food(id)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                     """),
 
@@ -116,6 +160,7 @@ final class Schema {
                         menu_id    INT NOT NULL,
                         allergy_id INT NOT NULL,
                         risk_level ENUM('CONTAINS', 'POSSIBLE', 'UNKNOWN') NOT NULL,
+                        ingredient VARCHAR(100),
                         PRIMARY KEY (menu_id, allergy_id),
                         FOREIGN KEY (menu_id)    REFERENCES menu(id),
                         FOREIGN KEY (allergy_id) REFERENCES allergy(id)
