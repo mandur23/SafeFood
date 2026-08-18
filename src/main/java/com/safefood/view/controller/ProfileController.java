@@ -27,7 +27,6 @@ public class ProfileController {
     @FXML private FlowPane categoryPane;
     @FXML private TextField searchField;
     @FXML private ComboBox<String> distanceBox;
-    @FXML private Slider priceMin;
     @FXML private Slider priceMax;
     @FXML private Label priceLabel;
     @FXML private Slider spicySlider;
@@ -88,11 +87,28 @@ public class ProfileController {
                 case 1000: distanceBox.getSelectionModel().select("1km"); break;
                 case 500: distanceBox.getSelectionModel().select("500m"); break;
                 default: distanceBox.getSelectionModel().select("제한없음"); break;
+
             }
 
-            priceMin.valueProperty().addListener((observable, before, after) -> syncPrice());
-            priceMax.valueProperty().addListener((observable, before, after) -> syncPrice());
-            syncPrice();
+            // 화면 켜지자마자 글씨 띄우기
+            int initialPrice = (int) Math.round(priceMax.getValue() / 1000.0) * 1000;
+            priceLabel.setText(String.format("최대 %,d원 이하", initialPrice));
+
+            // 가격 설정
+            priceMax.valueProperty().addListener((observable, before, after) -> {
+                // 1000원 단위 반올림
+                int roundedPrice = (int) Math.round(after.doubleValue() / 1000.0) * 1000;
+                
+                // 무한 루프 방지
+                if (priceMax.getValue() != roundedPrice) {
+                    priceMax.setValue(roundedPrice);
+                }
+
+                // 라벨 텍스트 업데이트
+                priceLabel.setText(String.format("최대 %,d원 이하", roundedPrice));
+            });
+
+            // 맵기 설정
             spicySlider.valueProperty().addListener((observable, before, after) -> spicyValue.setText((int) spicySlider.getValue() + "단계"));
             spicyValue.setText((int) spicySlider.getValue() + "단계");
 
@@ -109,14 +125,18 @@ public class ProfileController {
         HBox chip = new HBox(6, label, remove);
         chip.setAlignment(Pos.CENTER_LEFT);
         chip.getStyleClass().add("chip");
-        remove.setOnAction(event -> ownedPane.getChildren().remove(chip));
+        remove.setOnAction(event -> {
+            ownedPane.getChildren().remove(chip);
+            saveAllergies(); // 지울 때도 알레르기 즉시 저장
+        });
 
         ownedPane.getChildren().add(chip);
     }
 
     @FXML
     private void handleSearch() {
-        AppNav.info("allergy 마스터 19종에서 이름으로 찾는 자리입니다.");
+        String allList = String.join(", ", DemoData.ALLERGIES);
+        AppNav.info("[지원되는 알레르기 목록 19종]\n\n" + allList);
     }
 
     @FXML
@@ -135,12 +155,51 @@ public class ProfileController {
 
         addOwned(name, (int) picked);
         searchField.clear();
+
+        // 방금 추가된 것을 포함하여 전체 알레르기 다시 저장
+        saveAllergies();
+        AppNav.info("알레르기 정보가 저장되었습니다.");
+    }
+
+    private void saveAllergies() {
+        int myId = com.safefood.dto.Session.getCurrentUser().getId();
+        java.util.Map<String, Integer> myAllergies = new java.util.HashMap<>();
+        for (javafx.scene.Node node : ownedPane.getChildren()) {
+            if(node instanceof javafx.scene.layout.HBox){
+                javafx.scene.layout.HBox chip = (javafx.scene.layout.HBox) node;
+                javafx.scene.control.Label label = (javafx.scene.control.Label) chip.getChildren().get(0);
+                String[] parts = label.getText().split("  Class ");
+                if(parts.length == 2){
+                    myAllergies.put(parts[0], Integer.parseInt(parts[1]));
+                }
+            }
+        }
+        ProfileService profileService = new ProfileService();
+        profileService.updateAllergiesOnly(myId, myAllergies);
     }
 
     @FXML
     private void handleSave() {
+        int myId =  com.safefood.dto.Session.getCurrentUser().getId();
 
-        AppNav.info("저장되었습니다. 다음 추천부터 반영됩니다.");
+        // 1. 매운맛, 예산, 거리 파싱
+        int spicyLevel = (int) spicySlider.getValue();
+        int priceLimit = (int) priceMax.getValue();
+
+        int maxDistance = 0;
+        String distStr = distanceBox.getValue();
+        if("500m".equals(distStr)){ maxDistance = 500;}
+        else if("1km".equals(distStr)){ maxDistance = 1000;}
+        else if("2km".equals(distStr)){ maxDistance = 2000;}
+        else if("3km".equals(distStr)){ maxDistance = 3000;}
+
+        // 2. 카테고리 파싱
+        List<String> myCategories = Widgets.selected(categoryChips);
+
+        // 3. 취향/조건 서비스 호출
+        ProfileService profileService = new ProfileService();
+        profileService.updatePreferencesOnly(myId, spicyLevel, priceLimit, maxDistance, myCategories);
+        AppNav.info("취향 및 조건이 저장되었습니다. 다음 추천부터 반영됩니다.");
     }
 
     @FXML
@@ -163,11 +222,4 @@ public class ProfileController {
         AppNav.show("로그인", "login.fxml");
     }
 
-    private void syncPrice() {
-        if (priceMin.getValue() > priceMax.getValue()) {
-            priceMin.setValue(priceMax.getValue());
-        }
-        priceLabel.setText(String.format("%,d원 ~ %,d원",
-                (int) priceMin.getValue(), (int) priceMax.getValue()));
-    }
 }

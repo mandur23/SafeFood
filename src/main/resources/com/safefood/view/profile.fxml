@@ -81,12 +81,10 @@
                         <Label text="예산 범위" styleClass="field-label"/>
                         <Label fx:id="priceLabel" text="8,000원 ~ 15,000원" styleClass="accent-text"/>
                         <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Label text="하한" styleClass="sub" minWidth="30"/>
-                            <Slider fx:id="priceMin" min="0" max="30000" value="8000" HBox.hgrow="ALWAYS"/>
-                        </HBox>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
                             <Label text="상한" styleClass="sub" minWidth="30"/>
-                            <Slider fx:id="priceMax" min="0" max="30000" value="15000" HBox.hgrow="ALWAYS"/>
+                            <Slider fx:id="priceMax" min="0" max="30000" value="15000"
+                            majorTickUnit="1000" minorTickCount="0" snapToTicks="true"
+                            showTickMarks="true" showTickLabels="true" HBox.hgrow="ALWAYS"/>
                         </HBox>
 
                         <VBox spacing="4">

@@ -64,7 +64,7 @@ public class ProfileDao {
                     int  severity = rs.getInt("severity");
 
                     // DB의 allergy_id(int)를 텍스트로 변환
-                    if(allergyId == 0 || severity <= DemoData.ALLERGIES.size()){
+                    if(allergyId > 0 && allergyId <= DemoData.ALLERGIES.size()){
                         String allergyName = DemoData.ALLERGIES.get(allergyId - 1);
                         map.put(allergyName, severity);
                     }
@@ -75,5 +75,67 @@ public class ProfileDao {
         }
         return map;
     }
+
+
+    // 단일 취향 업데이트 (데이터가 없으면 새로 넣고, 있으면 덮어쓰기)
+    public void updatePreference(int userId, int spicy_level, int priceMax, int maxDistance){
+        String sql = "INSERT INTO user_preference (user_id, spicy_level, price_min, price_max, max_distance) " +
+                     "VALUES (?, ?, 0, ?, ?) " +
+                     "ON DUPLICATE KEY UPDATE spicy_level = ?, price_max = ?, max_distance = ?";
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            // INSERT 용
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, spicy_level);
+            pstmt.setInt(3, priceMax);
+            pstmt.setInt(4, maxDistance);
+            
+            // UPDATE 용
+            pstmt.setInt(5, spicy_level);
+            pstmt.setInt(6, priceMax);
+            pstmt.setInt(7, maxDistance);
+            
+            pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 카테고리 / 알레르기 초기화 ( DELETE )
+    public void deleteCategory(int userId){
+        String sql = "DELETE FROM user_category WHERE user_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, userId); pstmt.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public void deleteAllergies(int userId){
+        String sql = "DELETE FROM user_allergy WHERE user_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, userId); pstmt.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+
+    // 카테고리 / 알레르기 다시 추가 ( INSERT )
+
+    // 카테고리 추가
+    public void insertCategory(int userId, String category){
+        String  sql = "INSERT INTO user_category (user_id, category) VALUES (?, ?)";
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, userId); pstmt.setString(2, category);
+            pstmt.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    // 알레르기 추가
+    public void insertAllergy(int userId, int allergyId, int severity){
+        String sql = "INSERT INTO user_allergy (user_id, allergy_id, severity) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, userId); pstmt.setInt(2, allergyId);
+            pstmt.setInt(3, severity); pstmt.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+
 
 }
