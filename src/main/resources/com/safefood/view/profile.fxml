@@ -23,7 +23,7 @@
             <Button text="2. 내 정보" styleClass="nav-button, active"/>
             <Button text="3. 기록" styleClass="nav-button" onAction="#handleHistory"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="사용자님 로그인 중" styleClass="sub"/>
+            <Label fx:id="userLabel" text="사용자님 로그인 중" styleClass="sub"/>
             <Button text="로그아웃" onAction="#handleLogout"/>
         </HBox>
     </top>

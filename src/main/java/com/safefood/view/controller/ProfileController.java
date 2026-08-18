@@ -31,6 +31,7 @@ public class ProfileController {
     @FXML private Label priceLabel;
     @FXML private Slider spicySlider;
     @FXML private Label spicyValue;
+    @FXML private Label userLabel;
 
     private final List<ToggleButton> categoryChips = new ArrayList<>();
     private final ToggleGroup severityGroup = new ToggleGroup();
@@ -41,6 +42,8 @@ public class ProfileController {
         if(com.safefood.dto.Session.getCurrentUser() == null){
             return;
         }
+        
+        userLabel.setText(com.safefood.dto.Session.getCurrentUser().getNickname() + "님 로그인 중");
 
         int myId = com.safefood.dto.Session.getCurrentUser().getId();
         com.safefood.service.ProfileService profileService = new com.safefood.service.ProfileService();
@@ -205,6 +208,8 @@ public class ProfileController {
     @FXML
     private void handleEditInfo() {
         AppNav.dialog("정보 변경", "edit-info.fxml");
+        // 정보 변경이 끝나면(팝업창이 닫히면) 즉시 라벨 텍스트 갱신
+        userLabel.setText(com.safefood.dto.Session.getCurrentUser().getNickname() + "님 로그인 중");
     }
 
     @FXML
