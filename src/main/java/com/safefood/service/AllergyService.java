@@ -7,7 +7,6 @@ import java.util.Map;
 
 /**
  * [ SafeFood - 알레르기 안전 검증 및 감점 서비스 ]
- *
  * 관련 기능 ID: L-02(메뉴 매칭), L-03(위험도 판정), L-04(위험도 경고 및 감점)
  */
 public class AllergyService {
@@ -59,18 +58,17 @@ public class AllergyService {
      */
     public int calculatePenalty(Map<Integer, Integer> userSeverityMap, List<Integer> menuPossibleAllergyIds) {
         int totalPenalty = 0;
-
-        if (userSeverityMap == null || menuPossibleAllergyIds == null || menuPossibleAllergyIds.isEmpty()) {
+        if (userSeverityMap == null || menuPossibleAllergyIds == null) {
             return 0;
         }
 
         for (Integer possibleAllergyId : menuPossibleAllergyIds) {
+            // 사용자가 해당 알레르기를 가지고 있는 경우에만 심각도 * 10 감점!
             if (userSeverityMap.containsKey(possibleAllergyId)) {
                 int severity = userSeverityMap.get(possibleAllergyId);
-                totalPenalty += severity * 10; // 심각도 * 10점 누적 감점
+                totalPenalty += (severity * 10);
             }
         }
-
         return totalPenalty;
     }
 
