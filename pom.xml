@@ -129,8 +129,6 @@
             </build>
         </profile>
 
-        <!-- 공공데이터 음식 사전 임포터: mvn compile exec:java -Pimport-food
-             인자는 -Dexec.args 로 전달합니다. 사용법은 MenuGenImporter의 Javadoc 참고. -->
         <profile>
             <id>import-food</id>
             <build>

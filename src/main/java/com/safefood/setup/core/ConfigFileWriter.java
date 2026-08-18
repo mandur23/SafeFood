@@ -100,8 +100,6 @@ public final class ConfigFileWriter {
                 # 지도 API 키 (Kakao Developers 등에서 발급)
                 map.api.key=%s
 
-                # 농진청 메뉴젠(음식·재료) API 키 — 공공데이터포털에서 발급, 음식 사전 임포터가 사용.
-                # 마법사는 이 값을 묻지 않으므로 직접 채우세요 (마법사를 재실행하면 다시 비워집니다).
                 menugen.api.key=
 
                 # 소켓 서버 주소 (그룹 실시간 통신)

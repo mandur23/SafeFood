@@ -13,9 +13,6 @@ import java.util.List;
  *   <li>데이터베이스 설계서 — 테이블 정의서와 부록 A</li>
  * </ol>
  *
- * <p>음식 사전 테이블(food·ingredient·food_ingredient·ingredient_allergy)은
- * {@code com.safefood.tool.MenuGenImporter}도 DB 반영 전에 이 DDL을 재사용합니다.
- *
  * <p>모든 DDL은 {@code IF NOT EXISTS}라서 마법사를 여러 번 실행해도 기존 데이터가 지워지지 않습니다.
  * 대신 <b>이미 만들어진 테이블의 구조는 바뀌지 않습니다.</b>
  * 스키마를 수정한 뒤 반영하려면 해당 테이블을 직접 DROP 하고 다시 실행하거나, ALTER로 직접 반영하세요.

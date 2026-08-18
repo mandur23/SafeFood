@@ -34,52 +34,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-/**
- * 농촌진흥청 국립식량과학원 <b>농식품 식단관리(메뉴젠) 음식 및 재료 정보</b> API를 호출해
- * {@code data/public/}의 음식 사전 파일 4종을 채우는 임포터입니다.
- *
- * <pre>
- * mvn compile exec:java -Pimport-food -Dexec.args="--food=콩나물국"
- * </pre>
- *
- * <p>인자
- * <ul>
- *   <li>{@code --food=이름} — 음식명 검색어. 생략하면 전체를 가져옵니다(수천 건, 오래 걸림)</li>
- *   <li>{@code --key=서비스키} — 공공데이터포털 서비스 키. 생략하면
- *       환경 변수 {@code MENUGEN_API_KEY} → {@code config.properties}의
- *       {@code menugen.api.key} 순서로 찾습니다</li>
- *   <li>{@code --max-pages=N} — 가져올 페이지 수 제한 (기본 무제한, 페이지당 20건)</li>
- * </ul>
- *
- * <p>결과는 {@code data/public/}에 upsert 되고, {@code config.properties}에
- * {@code db.url}이 있으면 <b>MySQL에도 같은 내용을 반영</b>합니다. 같은 명령을 여러 번
- * 실행해도 음식은 {@code food_cd}, 재료는 이름 기준으로 갱신되므로 중복이 쌓이지 않습니다.
- * <ul>
- *   <li>{@code food.txt} — 음식 사전 (fd_Code, fd_Nm, 분류)</li>
- *   <li>{@code ingredient.txt} — 재료 마스터 (food_Nm)</li>
- *   <li>{@code food_ingredient.txt} — 음식별 재료 구성 (사용량 g)</li>
- *   <li>{@code ingredient_allergy.txt} — 재료 → 알레르기 매핑
- *       (API의 allrgy_Info를 {@code allergy.txt} 마스터 이름으로 정규화)</li>
- * </ul>
- *
- * <p>알레르기 id는 {@code data/public/allergy.txt}의 <b>줄 번호</b>(1부터)입니다.
- * 그래서 이 파일이 없으면 실행을 거부합니다 — 먼저 Setup Wizard를 실행하세요.
- * API 표기가 우리 마스터와 다른 항목(난류→계란, 대두(콩)→대두, 소고기→쇠고기 등)은
- * 별칭 표로 정규화하고, 매핑하지 못한 표기는 마지막에 경고로 출력합니다.
- */
 public final class MenuGenImporter {
 
     private static final String ENDPOINT =
             "https://apis.data.go.kr/1390803/AgriFood/FdFood1/getKoreanFoodFdFoodList1";
-    /** API가 허용하는 Page_Size 최대값. 21부터는 400(요청 페이지 형식 오류)을 돌려줍니다. */
     private static final int PAGE_SIZE = 20;
 
-    /** DB 반영 시 임포터가 직접 만들어도 되는 테이블. DDL은 {@link Schema#TABLES}를 재사용합니다. */
     private static final List<String> DICTIONARY_TABLES =
             List.of("food", "ingredient", "food_ingredient", "ingredient_allergy");
     private static final int BATCH_SIZE = 500;
 
-    /** API의 알레르기 표기 → allergy.txt 마스터 이름. 괄호를 뗀 뒤에 찾습니다. */
     private static final Map<String, String> ALLERGY_ALIAS = Map.ofEntries(
             Map.entry("난류", "계란"), Map.entry("알류", "계란"), Map.entry("달걀", "계란"),
             Map.entry("콩", "대두"), Map.entry("소고기", "쇠고기"), Map.entry("밀가루", "밀"),
@@ -91,13 +55,11 @@ public final class MenuGenImporter {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    // ── 파일 저장소 (읽어서 갱신 후 통째로 다시 씀) ──────────────
     private record FoodRow(int id, String foodCd, String name, String category) {
     }
 
     private final Map<String, FoodRow> foodsByCd = new LinkedHashMap<>();
     private final Map<String, Integer> ingredientIdByName = new LinkedHashMap<>();
-    /** food_id → (ingredient_id → 사용량). 재임포트한 음식은 목록을 통째로 교체합니다. */
     private final Map<Integer, LinkedHashMap<Integer, String>> linksByFoodId = new LinkedHashMap<>();
     private final TreeSet<long[]> allergyLinks =
             new TreeSet<>(Comparator.<long[]>comparingLong(a -> a[0]).thenComparingLong(a -> a[1]));
@@ -146,7 +108,7 @@ public final class MenuGenImporter {
             fetched += items.size();
             System.out.printf("페이지 %d — %d/%d건%n", page, fetched, total);
             page++;
-            Thread.sleep(200);      // 공공 API 예의상 살짝 쉼
+            Thread.sleep(200);
         }
 
         saveStores();
@@ -159,8 +121,6 @@ public final class MenuGenImporter {
             unmappedAllergies.forEach(name -> System.out.println("  - " + name));
         }
     }
-
-    // ── API 호출 ──────────────────────────────────────────────
 
     private Document fetchPage(String key, String foodName, int page) throws Exception {
         StringBuilder url = new StringBuilder(ENDPOINT)
@@ -180,14 +140,14 @@ public final class MenuGenImporter {
         String body;
         try {
             body = http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)).body();
-        } catch (IOException first) {     // 순간적인 네트워크 오류는 한 번만 재시도
+        } catch (IOException first) {
             Thread.sleep(1000);
             body = http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)).body();
         }
 
         Document doc = parseXml(body);
         String root = doc.getDocumentElement().getTagName();
-        if ("OpenAPI_ServiceResponse".equals(root)) {     // 인증 실패 등 포털 공통 오류 형식
+        if ("OpenAPI_ServiceResponse".equals(root)) {
             throw new IOException("API 오류: " + firstText(doc, "returnAuthMsg", "errMsg", "returnReasonCode"));
         }
         int code = intText(doc, "result_Code");
@@ -197,7 +157,6 @@ public final class MenuGenImporter {
         return doc;
     }
 
-    /** 포털 키는 인코딩판(% 포함)과 디코딩판 두 가지로 발급됩니다. % 가 없으면 인코딩해서 씁니다. */
     private static String encodeKey(String key) {
         return key.contains("%") ? key : URLEncoder.encode(key, StandardCharsets.UTF_8);
     }
@@ -210,9 +169,6 @@ public final class MenuGenImporter {
         return builder.parse(new InputSource(new StringReader(body)));
     }
 
-    // ── 응답 → 저장소 반영 ────────────────────────────────────
-
-    /** item 하나(음식 + 재료 목록)를 저장소에 반영합니다. 신규 음식이면 true. */
     private boolean upsertFood(Element item) {
         String foodCd = clean(childText(item, "fd_Code"), 20);
         String name = clean(childText(item, "fd_Nm"), 100);
@@ -228,7 +184,7 @@ public final class MenuGenImporter {
         int foodId = isNew ? nextId(foodsByCd.values().stream().mapToInt(FoodRow::id)) : existing.id();
         foodsByCd.put(foodCd, new FoodRow(foodId, foodCd, name, category));
 
-        LinkedHashMap<Integer, String> links = new LinkedHashMap<>();  // 재임포트 시 통째로 교체
+        LinkedHashMap<Integer, String> links = new LinkedHashMap<>();
         for (Element foodList : elements(item, "food_List")) {
             for (Element food : elements(foodList, "food")) {
                 String ingName = clean(childText(food, "food_Nm"), 100);
@@ -247,20 +203,13 @@ public final class MenuGenImporter {
         return isNew;
     }
 
-    /**
-     * allrgy_Info 원문을 allergy.txt 마스터 이름 목록으로 바꿉니다.
-     *
-     * <p>"대두(콩)"처럼 괄호 안팎 모두, "어패류(굴, 홍합 포함)"처럼 괄호 안에
-     * 쉼표가 있는 경우까지 후보 토큰으로 삼습니다. 괄호부터 떼지 않으면
-     * 쉼표 분리가 괄호 안을 "홍합 포함)"처럼 조각내 버립니다.
-     */
     private List<String> normalizeAllergies(String raw) {
         if (raw == null) {
             return List.of();
         }
         List<String> tokens = new ArrayList<>();
         var matcher = java.util.regex.Pattern.compile("\\(([^)]*)\\)").matcher(raw);
-        while (matcher.find()) {                              // 괄호 안 내용도 후보로
+        while (matcher.find()) {
             tokens.addAll(List.of(matcher.group(1).split("[,·/]")));
         }
         tokens.addAll(List.of(raw.replaceAll("\\([^)]*\\)", " ").split("[,·/]")));
@@ -283,7 +232,6 @@ public final class MenuGenImporter {
         return result;
     }
 
-    /** "209.30" → "209.3g". 숫자가 아니면 원문 그대로 둡니다. */
     private static String weightToQuantity(String raw) {
         if (raw == null) {
             return "";
@@ -294,8 +242,6 @@ public final class MenuGenImporter {
             return raw;
         }
     }
-
-    // ── data/public 읽기 · 쓰기 ───────────────────────────────
 
     private List<String> loadAllergyMaster() throws IOException {
         Path file = publicDir.resolve("allergy.txt");
@@ -351,46 +297,6 @@ public final class MenuGenImporter {
                 allergyLinks.stream().map(a -> a[0] + "|" + a[1]).toList());
     }
 
-    private List<String[]> rows(String fileName, int fieldCount) throws IOException {
-        List<String[]> result = new ArrayList<>();
-        Path file = publicDir.resolve(fileName);
-        if (!Files.exists(file)) {
-            return result;
-        }
-        for (String line : readLines(file)) {
-            String[] fields = line.split("\\|", -1);
-            if (fields.length >= fieldCount) {
-                result.add(fields);
-            }
-        }
-        return result;
-    }
-
-    private static List<String> readLines(Path file) throws IOException {
-        return Files.readAllLines(file, StandardCharsets.UTF_8).stream()
-                .map(String::trim)
-                .filter(line -> !line.isEmpty())
-                .toList();
-    }
-
-    private void writeLines(String fileName, List<String> lines) throws IOException {
-        String content = lines.isEmpty() ? "" : String.join(System.lineSeparator(), lines) + System.lineSeparator();
-        Files.writeString(publicDir.resolve(fileName), content, StandardCharsets.UTF_8);
-        System.out.println("+ data/public/" + fileName + " (" + lines.size() + "건)");
-    }
-
-    // ── MySQL 반영 ────────────────────────────────────────────
-
-    /**
-     * {@code config.properties}에 {@code db.url}이 있으면 파일과 같은 내용을 MySQL에도 반영합니다.
-     *
-     * <p>DB의 id를 강제하지 않습니다 — 음식은 {@code food_cd}, 재료·알레르기는 <b>이름</b>으로
-     * 대조해서 upsert 하므로, DB에 이미 다른 id로 들어간 데이터가 있어도 망가뜨리지 않습니다.
-     * (그래서 파일의 id와 DB의 id는 서로 다를 수 있습니다. 두 저장소는 각자 일관되면 됩니다)
-     *
-     * <p>파일 갱신이 끝난 뒤에 실행되므로, DB 반영이 실패해도 경고만 남기고 끝냅니다.
-     * 커밋 전에 실패하면 트랜잭션이 통째로 풀려서 반쯤 들어간 상태는 남지 않습니다.
-     */
     private void importIntoDatabase() {
         if (!hasDbConfig()) {
             System.out.println("config.properties에 db.url이 없어 DB 반영은 건너뜁니다.");
@@ -409,7 +315,7 @@ public final class MenuGenImporter {
                 return;
             }
 
-            try (Statement statement = con.createStatement()) {   // 사전 테이블이 없으면 생성
+            try (Statement statement = con.createStatement()) {
                 for (Schema.Table table : Schema.TABLES) {
                     if (DICTIONARY_TABLES.contains(table.name())) {
                         statement.execute(table.ddl());
@@ -455,7 +361,6 @@ public final class MenuGenImporter {
         return url != null && !url.isBlank();
     }
 
-    /** 1번째 컬럼(문자열) → 2번째 컬럼(id) 맵. */
     private static Map<String, Integer> selectIdMap(Connection con, String sql) throws SQLException {
         Map<String, Integer> result = new LinkedHashMap<>();
         try (Statement statement = con.createStatement(); ResultSet rs = statement.executeQuery(sql)) {
@@ -500,7 +405,6 @@ public final class MenuGenImporter {
         }
     }
 
-    /** 이번에 들고 있는 음식들의 재료 구성을 DB에서 지우고 다시 넣습니다(교체). */
     private int replaceFoodIngredientsInDb(Connection con,
                                            Map<Integer, String> foodCdByFileId,
                                            Map<Integer, String> ingredientNameByFileId,
@@ -577,13 +481,38 @@ public final class MenuGenImporter {
         return count;
     }
 
-    // ── 자잘한 도우미 ─────────────────────────────────────────
+    private List<String[]> rows(String fileName, int fieldCount) throws IOException {
+        List<String[]> result = new ArrayList<>();
+        Path file = publicDir.resolve(fileName);
+        if (!Files.exists(file)) {
+            return result;
+        }
+        for (String line : readLines(file)) {
+            String[] fields = line.split("\\|", -1);
+            if (fields.length >= fieldCount) {
+                result.add(fields);
+            }
+        }
+        return result;
+    }
+
+    private static List<String> readLines(Path file) throws IOException {
+        return Files.readAllLines(file, StandardCharsets.UTF_8).stream()
+                .map(String::trim)
+                .filter(line -> !line.isEmpty())
+                .toList();
+    }
+
+    private void writeLines(String fileName, List<String> lines) throws IOException {
+        String content = lines.isEmpty() ? "" : String.join(System.lineSeparator(), lines) + System.lineSeparator();
+        Files.writeString(publicDir.resolve(fileName), content, StandardCharsets.UTF_8);
+        System.out.println("+ data/public/" + fileName + " (" + lines.size() + "건)");
+    }
 
     private static int nextId(java.util.stream.IntStream usedIds) {
         return usedIds.max().orElse(0) + 1;
     }
 
-    /** API의 "null" 문자열을 없는 값으로 바꾸고, 구분자 |와 줄바꿈을 지우고, 길이를 자릅니다. */
     private static String clean(String value, int maxLength) {
         if (value == null) {
             return null;
@@ -627,7 +556,6 @@ public final class MenuGenImporter {
                 + "config.properties의 menugen.api.key 중 하나로 알려 주세요.");
     }
 
-    /** 직계 자식 중 tag 요소의 텍스트. 없거나 "null"이면 null. */
     private static String childText(Element parent, String tag) {
         for (Element child : elements(parent, tag)) {
             String text = child.getTextContent();
@@ -636,10 +564,6 @@ public final class MenuGenImporter {
         return null;
     }
 
-    /**
-     * 이름이 tag인 <b>직계 자식</b>만 모읍니다. 후손까지 내려가면 item의 fd_Code와
-     * 그 안 food의 fd_Code처럼 같은 이름이 겹쳐서 잘못된 값을 집어올 수 있습니다.
-     */
     private static List<Element> elements(Element parent, String tag) {
         List<Element> result = new ArrayList<>();
         NodeList children = parent.getChildNodes();
@@ -661,7 +585,6 @@ public final class MenuGenImporter {
         }
     }
 
-    /** 문서 전체에서 이름이 tags 중 하나인 첫 요소의 텍스트. */
     private static String firstText(Document doc, String... tags) {
         for (String tag : tags) {
             NodeList nodes = doc.getElementsByTagName(tag);
