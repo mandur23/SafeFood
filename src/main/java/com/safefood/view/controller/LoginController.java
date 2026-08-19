@@ -78,6 +78,8 @@ public class LoginController {
 
             // Session에 정보 보관
             com.safefood.dto.Session.setCurrentUser(user);
+            // 통신 닉네임
+            com.safefood.network.GroupSession.get().setDisplayName(user.getNickname());
 
             if (nameField.getText().isBlank()) {
                 nameField.setText(user.getNickname());
@@ -101,6 +103,8 @@ public class LoginController {
             UserDto guest = new  UserDto(null, null, guestName);
             guest.setId(-1);
             com.safefood.dto.Session.setCurrentUser(guest);
+            // 통신 닉네임
+            com.safefood.network.GroupSession.get().setDisplayName(guestName);
 
             // 취향 및 알레르기 온보딩 전환
             AppNav.show("게스트 취향 및 알레르기 설정", "onboarding.fxml");

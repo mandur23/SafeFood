@@ -16,7 +16,7 @@ public class Session {
     }
 
     // 게스트 정보 저장&전달
-    public static void setGuestPreferences(PreferenceDto pref){ guestPreference = pref; }
+    public static void setGuestPreference(PreferenceDto pref){ guestPreference = pref; }
     public static PreferenceDto getGuestPreferences(){ return guestPreference; }
 
     // 로그아웃 시 유저 정보를 지움

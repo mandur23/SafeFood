@@ -84,19 +84,12 @@ public class OnboardingController {
         boolean isGuest = (me != null && me.getId() == -1);
 
         int currentUserId = -1;
-
-        if(!isGuest){
-        // 방금 가입한 아이디로 실제 회원 번호(user_id)를 DB에서 찾아오기
-        com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
-
-        // 방금 가입한 유저정보 뽑기
-        com.safefood.dto.UserDto user = authService.getUserInfo(newUserId);
-
-        // 세션 로그인 상태 등록
-        com.safefood.dto.Session.setCurrentUser(user);
-
-        // 번호 꺼냄
-        currentUserId = user.getId();
+        if (!isGuest) {
+            // 정식 회원가입 직후 넘어온 경우 (DB에서 진짜 번호를 찾아와야 함)
+            com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
+            me = authService.getUserInfo(newUserId);
+            com.safefood.dto.Session.setCurrentUser(me);
+            currentUserId = me.getId();
         }
 
 
@@ -121,36 +114,45 @@ public class OnboardingController {
         // 카테고리 (문자열 리스트)
         List<String> preferredCategories = Widgets.selected(categoryChips);
 
+        if (isGuest) {
+            // DB에 안 넣고 세션에만 취향정보를 묶어서 저장
+            com.safefood.dto.PreferenceDto guestPref = new com.safefood.dto.PreferenceDto(spicyLevel, 0, priceMax, maxDistance);
+            guestPref.setSpicyLevel(spicyLevel);
+            guestPref.setPriceMax(priceMax);
+            guestPref.setMaxDistance(maxDistance);
+            com.safefood.dto.Session.setGuestPreference(guestPref);
+
+            // 알레르기 리스트도 나중에 필요하면 Session에 담을 수 있습니다.
+            // 저장이 끝났으니 메인 화면이 아닌  '그룹 옵션 창'을 띄워줌!
+            AppNav.dialog("같이 먹기 옵션 선택","group-option.fxml");
+            return;
+        }
+
         // --------------------------------------------------------------------- //
 
-        // 3. 알레르기 ID와 심각도를 뽑아서 Service로 넘기기
-        com.safefood.service.OnboardingService onboardingService =
-                new com.safefood.service.OnboardingService();
+        // 💡 정식 회원 처리 (기존 로직)
+        com.safefood.service.OnboardingService onboardingService = new com.safefood.service.
+                OnboardingService();
 
         for (javafx.scene.Node node : severityBox.getChildren()) {
             if (node instanceof HBox) {
                 HBox row = (HBox) node;
                 Label label = (Label) row.getChildren().get(0);
                 @SuppressWarnings("unchecked")
-                ChoiceBox<String> choice = (ChoiceBox<String>)
-                        row.getChildren().get(1);
+                ChoiceBox<String> choice = (ChoiceBox<String>) row.getChildren().get(1);
 
-                String allergyName = label.getText();     //"새우"
-                String severityStr = choice.getValue();   //"Class 3 보통"
+                String allergyName = label.getText();
+                String severityStr = choice.getValue();
 
-                int allergyId = DemoData.ALLERGIES.
-                        indexOf(allergyName) + 1;
-                int severity = DemoData.SEVERITIES.
-                        indexOf(severityStr) + 1;
+                int allergyId = DemoData.ALLERGIES.indexOf(allergyName) + 1;
+                int severity = DemoData.SEVERITIES.indexOf(severityStr) + 1;
 
-                // 4. 변환된 숫자를 Service로 넘겨 DB에 저장 (추후 취향/카테고리 저장 메서드도 여기에 추가)
                 onboardingService.saveAllergy(currentUserId, allergyId, severity);
             }
         }
 
-        // 취향 및 카테고리 저장
-        onboardingService.savePreferences(currentUserId, spicyLevel, priceMax, maxDistance, preferredCategories);
-
+        onboardingService.savePreferences(currentUserId, spicyLevel, priceMax, maxDistance,
+                preferredCategories);
         AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
     }
 }
