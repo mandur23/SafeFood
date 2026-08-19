@@ -33,7 +33,13 @@ public class MainController {
 
     @FXML
     private void initialize() {
-        userLabel.setText(GroupSession.get().displayName() + "님 로그인 중");
+        // 회원은 로그인 세션의 닉네임을, 게스트는 그룹 참여용 표시 이름을 씁니다.
+        if (com.safefood.dto.Session.getCurrentUser() != null) {
+            String myNick = com.safefood.dto.Session.getCurrentUser().getNickname();
+            userLabel.setText(myNick + "님 로그인 중");
+        } else {
+            userLabel.setText(GroupSession.get().displayName() + "님 로그인 중");
+        }
 
         categoryBox.getItems().add("전체");
         categoryBox.getItems().addAll(DemoData.CATEGORIES);

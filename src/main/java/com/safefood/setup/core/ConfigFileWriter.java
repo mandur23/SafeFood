@@ -24,7 +24,7 @@ import java.util.List;
 public final class ConfigFileWriter {
 
     private static final String CONFIG_NAME = "config.properties";
-    private static final String EXAMPLE_NAME = "config.properties";
+    private static final String EXAMPLE_NAME = "config.properties.example";
 
     /** 공유용 예시 파일에 쓸 프로젝트 기본값. 개인이 고른 값이 아닙니다. */
     private static final String DEFAULT_DATABASE = "safefood";
@@ -179,7 +179,7 @@ public final class ConfigFileWriter {
      * 커밋되면 안 되는 항목이 .gitignore에 있는지 확인하고, 빠진 것만 추가합니다.
      *
      * <p>"파일 전체에 문자열이 들어 있는지"로 확인하면 안 됩니다.
-     * 예를 들어 {@code config.properties}만 적혀 있어도
+     * 예를 들어 {@code config.properties.example}만 적혀 있어도
      * {@code contains("config.properties")}는 true라서, 정작 막아야 할
      * {@code config.properties}가 그대로 커밋될 수 있습니다.
      * 그래서 <b>줄 단위로</b> 비교합니다.

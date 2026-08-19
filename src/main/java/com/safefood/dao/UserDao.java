@@ -55,4 +55,35 @@ public class UserDao {
         }
         return user;
     }
+
+
+    // 닉네임 중복 확인
+    public UserDto findByNickname(String nickname) {
+        String sql = "SELECT id FROM `user` WHERE nickname = ?";
+        UserDto user = null;
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, nickname);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if(rs.next()) {
+                    user = new UserDto(); // 데이터가 하나라도 있다면 객체 만들기(중복이라는 뜻)
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return user;
+    }
+
+
+    // 회원 정보 덮어쓰기
+    public boolean updateUserInfo(int userId, String newPassword, String newNickname) {
+        String sql = "UPDATE `user` SET password = ?, nickname = ? WHERE id = ?";
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newPassword);
+            pstmt.setString(2, newNickname);
+            pstmt.setInt(3, userId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

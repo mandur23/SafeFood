@@ -18,9 +18,11 @@ public class LoginController {
 
     @FXML private ToggleGroup tabGroup;
     @FXML private ToggleButton memberTab;
+    @FXML private VBox idBox;
     @FXML private TextField idField;
+    @FXML private VBox passwordBox;
     @FXML private PasswordField passwordField;
-    @FXML private VBox guestNameBox;
+    @FXML private VBox nameBox;
     @FXML private TextField nameField;
     @FXML private Label guestHintLabel;
     @FXML private Button signUpButton;
@@ -44,13 +46,17 @@ public class LoginController {
     }
 
     private void applyTabMode(boolean isMember) {
-        idField.setDisable(!isMember);
-        passwordField.setDisable(!isMember);
-        signUpButton.setDisable(!isMember);
-        guestNameBox.setVisible(!isMember);
-        guestNameBox.setManaged(!isMember);
+        idBox.setVisible(isMember);
+        idBox.setManaged(isMember);
+        passwordBox.setVisible(isMember);
+        passwordBox.setManaged(isMember);
+
+        nameBox.setVisible(!isMember);
+        nameBox.setManaged(!isMember);
         guestHintLabel.setVisible(!isMember);
         guestHintLabel.setManaged(!isMember);
+
+        signUpButton.setDisable(!isMember);
     }
 
     @FXML
@@ -69,6 +75,9 @@ public class LoginController {
                 Widgets.showError(errorLabel, "아이디 또는 비밀번호가 올바르지 않습니다.");
                 return;
             }
+
+            // Session에 정보 보관
+            com.safefood.dto.Session.setCurrentUser(user);
 
             Widgets.hideError(errorLabel);
             // 그룹 참여(소켓 JOIN) 때 쓸 표시 이름

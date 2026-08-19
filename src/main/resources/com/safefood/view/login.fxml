@@ -41,17 +41,17 @@
                               toggleGroup="$tabGroup" styleClass="tab-toggle, last"/>
             </HBox>
 
-            <VBox spacing="4">
+            <VBox fx:id="idBox" spacing="4">
                 <Label text="아이디 (ID)" styleClass="field-label"/>
                 <TextField fx:id="idField" promptText="아이디를 입력하세요"/>
             </VBox>
 
-            <VBox spacing="4">
+            <VBox fx:id="passwordBox" spacing="4">
                 <Label text="비밀번호" styleClass="field-label"/>
                 <PasswordField fx:id="passwordField" promptText="비밀번호를 입력하세요"/>
             </VBox>
 
-            <VBox fx:id="guestNameBox" spacing="4" visible="false" managed="false">
+            <VBox fx:id="nameBox" spacing="4" visible="false" managed="false">
                 <Label text="게스트 이름" styleClass="field-label"/>
                 <TextField fx:id="nameField" promptText="게스트 이름을 입력하세요 (필수)"/>
             </VBox>
