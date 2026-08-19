@@ -1,6 +1,7 @@
 package com.safefood.view.controller;
 
 import com.safefood.dto.UserDto;
+import com.safefood.network.GroupSession;
 import com.safefood.service.AuthService;
 import com.safefood.view.AppNav;
 import com.safefood.view.Widgets;
@@ -23,6 +24,7 @@ public class LoginController {
     @FXML private PasswordField passwordField;
     @FXML private VBox nameBox;
     @FXML private TextField nameField;
+    @FXML private Label guestHintLabel;
     @FXML private Button signUpButton;
     @FXML private Label errorLabel;
 
@@ -37,26 +39,24 @@ public class LoginController {
         });
 
         memberTab.selectedProperty().addListener((observable, before, isMember) -> {
-            idBox.setVisible(isMember);
-            idBox.setManaged(isMember);
-            passwordBox.setVisible(isMember);
-            passwordBox.setManaged(isMember);
-            
-            nameBox.setVisible(!isMember);
-            nameBox.setManaged(!isMember);
-
-            signUpButton.setDisable(!isMember);
+            applyTabMode(isMember);
             Widgets.hideError(errorLabel);
         });
+        applyTabMode(memberTab.isSelected());
+    }
 
-        // Initialize default state
-        boolean isMember = memberTab.isSelected();
+    private void applyTabMode(boolean isMember) {
         idBox.setVisible(isMember);
         idBox.setManaged(isMember);
         passwordBox.setVisible(isMember);
         passwordBox.setManaged(isMember);
+
         nameBox.setVisible(!isMember);
         nameBox.setManaged(!isMember);
+        guestHintLabel.setVisible(!isMember);
+        guestHintLabel.setManaged(!isMember);
+
+        signUpButton.setDisable(!isMember);
     }
 
     @FXML
@@ -84,6 +84,11 @@ public class LoginController {
             }
 
             Widgets.hideError(errorLabel);
+            // 그룹 참여(소켓 JOIN) 때 쓸 표시 이름
+            GroupSession.get().setDisplayName(
+                    user.getNickname() == null || user.getNickname().isBlank()
+                            ? loginId : user.getNickname());
+            GroupSession.get().setGuest(false);
             AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
         } else {
             String guestName = nameField.getText().trim();

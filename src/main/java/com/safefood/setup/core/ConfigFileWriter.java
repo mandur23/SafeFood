@@ -100,6 +100,8 @@ public final class ConfigFileWriter {
                 # 지도 API 키 (Kakao Developers 등에서 발급)
                 map.api.key=%s
 
+                menugen.api.key=
+
                 # 소켓 서버 주소 (그룹 실시간 통신)
                 socket.host=%s
                 socket.port=%d
@@ -139,6 +141,8 @@ public final class ConfigFileWriter {
                 db.password=
 
                 map.api.key=
+
+                menugen.api.key=
 
                 socket.host=localhost
                 socket.port=%d
