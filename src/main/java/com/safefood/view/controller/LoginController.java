@@ -11,13 +11,17 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.VBox;
 
 public class LoginController {
 
     @FXML private ToggleGroup tabGroup;
     @FXML private ToggleButton memberTab;
+    @FXML private VBox idBox;
     @FXML private TextField idField;
+    @FXML private VBox passwordBox;
     @FXML private PasswordField passwordField;
+    @FXML private VBox nameBox;
     @FXML private TextField nameField;
     @FXML private Button signUpButton;
     @FXML private Label errorLabel;
@@ -33,12 +37,26 @@ public class LoginController {
         });
 
         memberTab.selectedProperty().addListener((observable, before, isMember) -> {
-            idField.setDisable(!isMember);
-            passwordField.setDisable(!isMember);
+            idBox.setVisible(isMember);
+            idBox.setManaged(isMember);
+            passwordBox.setVisible(isMember);
+            passwordBox.setManaged(isMember);
+            
+            nameBox.setVisible(!isMember);
+            nameBox.setManaged(!isMember);
+
             signUpButton.setDisable(!isMember);
-            nameField.setPromptText(isMember ? "표시할 이름을 입력하세요" : "게스트 이름을 입력하세요 (필수)");
             Widgets.hideError(errorLabel);
         });
+
+        // Initialize default state
+        boolean isMember = memberTab.isSelected();
+        idBox.setVisible(isMember);
+        idBox.setManaged(isMember);
+        passwordBox.setVisible(isMember);
+        passwordBox.setManaged(isMember);
+        nameBox.setVisible(!isMember);
+        nameBox.setManaged(!isMember);
     }
 
     @FXML
@@ -57,6 +75,9 @@ public class LoginController {
                 Widgets.showError(errorLabel, "아이디 또는 비밀번호가 올바르지 않습니다.");
                 return;
             }
+
+            // Session에 정보 보관
+            com.safefood.dto.Session.setCurrentUser(user);
 
             if (nameField.getText().isBlank()) {
                 nameField.setText(user.getNickname());

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OnboardingController {
-
+    public static String newUserId;
     @FXML private Slider spicySlider;
     @FXML private Label spicyValue;
     @FXML private FlowPane categoryPane;
@@ -78,6 +78,67 @@ public class OnboardingController {
 
     @FXML
     private void handleStart() {
+        // 1. 방금 가입한 아이디로 실제 회원 번호(user_id)를 DB에서 찾아오기
+        com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
+
+        // 방금 가입한 유저정보 뽑기
+        com.safefood.dto.UserDto user = authService.getUserInfo(newUserId);
+
+        // 세션 로그인 상태 등록
+        com.safefood.dto.Session.setCurrentUser(user);
+
+        // 번호 꺼냄
+        int currentUserId = user.getId();
+
+        // 2. 취향 데이터 가져오기 및 파싱(숫자로 변환)
+        int spicyLevel = (int) spicySlider.getValue(); // 이미 숫자(0~5)
+
+        // 예산: "12,000원 이하" -> 12000 변환, "제한없음" -> 0
+        String budgetStr = budgetBox.getValue();
+        int priceMax = 0;
+        if (!"제한없음".equals(budgetStr)) {
+            priceMax = Integer.parseInt(budgetStr.replaceAll("[^0-9]", ""));
+        }
+
+        // 거리: "1km" -> 1000(미터) 변환, "제한없음" -> 0
+        String distanceStr = distanceBox.getValue();
+        int maxDistance = 0;
+        if ("500m".equals(distanceStr)) maxDistance = 500;
+        else if ("1km".equals(distanceStr)) maxDistance = 1000;
+        else if ("2km".equals(distanceStr)) maxDistance = 2000;
+        else if ("3km".equals(distanceStr)) maxDistance = 3000;
+
+        // 카테고리 (문자열 리스트)
+        List<String> preferredCategories = Widgets.selected(categoryChips);
+
+
+        // 3. 알레르기 ID와 심각도를 뽑아서 Service로 넘기기
+        com.safefood.service.OnboardingService onboardingService =
+                new com.safefood.service.OnboardingService();
+
+        for (javafx.scene.Node node : severityBox.getChildren()) {
+            if (node instanceof HBox) {
+                HBox row = (HBox) node;
+                Label label = (Label) row.getChildren().get(0);
+                @SuppressWarnings("unchecked")
+                ChoiceBox<String> choice = (ChoiceBox<String>)
+                        row.getChildren().get(1);
+
+                String allergyName = label.getText();     //"새우"
+                String severityStr = choice.getValue();   //"Class 3 보통"
+
+                int allergyId = DemoData.ALLERGIES.
+                        indexOf(allergyName) + 1;
+                int severity = DemoData.SEVERITIES.
+                        indexOf(severityStr) + 1;
+
+                // 4. 변환된 숫자를 Service로 넘겨 DB에 저장 (추후 취향/카테고리 저장 메서드도 여기에 추가)
+                onboardingService.saveAllergy(currentUserId, allergyId, severity);
+            }
+        }
+
+        // 취향 및 카테고리 저장
+        onboardingService.savePreferences(currentUserId, spicyLevel, priceMax, maxDistance, preferredCategories);
 
         AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
     }

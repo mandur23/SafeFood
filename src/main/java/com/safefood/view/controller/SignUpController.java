@@ -73,6 +73,7 @@ public class SignUpController {
         }
 
         Widgets.hideError(errorLabel);
+        OnboardingController.newUserId = loginId;
         AppNav.show("온보딩 설문", "onboarding.fxml");
     }
 

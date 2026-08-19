@@ -26,11 +26,17 @@ public class MainController {
     @FXML private FlowPane moodPane;
     @FXML private CheckBox excludeEaten;
     @FXML private VBox cardBox;
+    @FXML private Label userLabel;
 
     private final List<ToggleButton> moodChips = new ArrayList<>();
 
     @FXML
     private void initialize() {
+        if (com.safefood.dto.Session.getCurrentUser() != null) {
+            String myNick = com.safefood.dto.Session.getCurrentUser().getNickname();
+            userLabel.setText(myNick + "님 로그인 중");
+        }
+
         categoryBox.getItems().add("전체");
         categoryBox.getItems().addAll(DemoData.CATEGORIES);
         categoryBox.setValue("전체");
