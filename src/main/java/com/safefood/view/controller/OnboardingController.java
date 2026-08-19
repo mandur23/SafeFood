@@ -1,5 +1,6 @@
 package com.safefood.view.controller;
 
+import com.safefood.dto.UserDto;
 import com.safefood.view.AppNav;
 import com.safefood.view.DemoData;
 import com.safefood.view.Widgets;
@@ -78,7 +79,14 @@ public class OnboardingController {
 
     @FXML
     private void handleStart() {
-        // 1. 방금 가입한 아이디로 실제 회원 번호(user_id)를 DB에서 찾아오기
+        UserDto me = com.safefood.dto.Session.getCurrentUser();
+        // 세션의 유저 아이디가 -1이면 게스트
+        boolean isGuest = (me != null && me.getId() == -1);
+
+        int currentUserId = -1;
+
+        if(!isGuest){
+        // 방금 가입한 아이디로 실제 회원 번호(user_id)를 DB에서 찾아오기
         com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
 
         // 방금 가입한 유저정보 뽑기
@@ -88,7 +96,9 @@ public class OnboardingController {
         com.safefood.dto.Session.setCurrentUser(user);
 
         // 번호 꺼냄
-        int currentUserId = user.getId();
+        currentUserId = user.getId();
+        }
+
 
         // 2. 취향 데이터 가져오기 및 파싱(숫자로 변환)
         int spicyLevel = (int) spicySlider.getValue(); // 이미 숫자(0~5)
@@ -111,6 +121,7 @@ public class OnboardingController {
         // 카테고리 (문자열 리스트)
         List<String> preferredCategories = Widgets.selected(categoryChips);
 
+        // --------------------------------------------------------------------- //
 
         // 3. 알레르기 ID와 심각도를 뽑아서 Service로 넘기기
         com.safefood.service.OnboardingService onboardingService =

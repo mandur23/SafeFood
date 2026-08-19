@@ -86,12 +86,20 @@ public class LoginController {
             Widgets.hideError(errorLabel);
             AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
         } else {
-            if (nameField.getText().isBlank()) {
+            String guestName = nameField.getText().trim();
+            if (guestName.isBlank()) {
                 Widgets.showError(errorLabel, "이름을 입력해 주세요.");
                 return;
             }
             Widgets.hideError(errorLabel);
-            AppNav.dialog("같이 먹기 옵션 선택", "group-option.fxml");
+            // 회원번호 -1인 게스트용 객체 만들기
+            UserDto guest = new  UserDto(null, null, guestName);
+            guest.setId(-1);
+            com.safefood.dto.Session.setCurrentUser(guest);
+
+            // 취향 및 알레르기 온보딩 전환
+            AppNav.show("게스트 취향 및 알레르기 설정", "onboarding.fxml");
+
         }
     }
 
