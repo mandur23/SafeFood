@@ -93,7 +93,7 @@ mvn compile exec:java -Pwizard
 | 1 | JDBC 드라이버 확인 (Maven이 이미 준비) | `data/` 모드로만 진행할지 선택 |
 | 2 | 접속 정보 입력 → 연결 테스트 | 원인을 한글로 안내하고 재입력 / DB 건너뛰기 |
 | 3 | `CREATE DATABASE safefood` | 이후 DB 단계 건너뛰고 `data/` 모드로 진행 |
-| 4 | 테이블 18개 생성 | 이후 DB 단계 건너뜀 |
+| 4 | 테이블 22개 생성 | 이후 DB 단계 건너뜀 |
 | 5 | 알레르기·기분 태그 기본 데이터 삽입 | 건너뜀 (기본 목록은 6단계에서 `data/public/`에도 생성) |
 | 6 | `data/public`·`data/private` 폴더와 기본 파일 준비 | 알려 주고 7단계는 계속 진행 |
 | 7 | `config.properties` 작성 + `.gitignore` 확인 | — |
@@ -153,8 +153,13 @@ data/
 ├── public/                        # 앱에 필요한 공통 데이터 (커밋 가능)
 │   ├── allergy.txt                # 알레르기 마스터 19종
 │   ├── mood.txt                   # 기분 태그 마스터 10종
+│   ├── food.txt                   # 음식 사전 (공공데이터, 선택)
+│   ├── ingredient.txt             # 재료 마스터 (선택)
+│   ├── food_ingredient.txt        # 음식별 재료 구성 (선택)
+│   ├── ingredient_allergy.txt     # 재료 → 알레르기 매핑 (선택)
 │   ├── restaurant.txt             # 가게 마스터 (선택)
-│   └── menu.txt                   # 메뉴 마스터 (선택)
+│   ├── menu.txt                   # 메뉴 마스터 (선택)
+│   └── menu_allergy.txt           # 메뉴별 알레르기 (선택)
 └── private/                       # 커밋 금지
     ├── users.txt                  # [개인] 회원·게스트
     ├── preferences.txt            # [개인] 취향·예산·거리
@@ -190,8 +195,13 @@ data/
 |------|------------|------|
 | `public/allergy.txt` | `allergy` | `name` |
 | `public/mood.txt` | `mood` | `name` |
+| `public/food.txt` | `food` | `id\|food_cd\|name\|category` |
+| `public/ingredient.txt` | `ingredient` | `id\|name` |
+| `public/food_ingredient.txt` | `food_ingredient` | `food_id\|ingredient_id\|quantity` |
+| `public/ingredient_allergy.txt` | `ingredient_allergy` | `ingredient_id\|allergy_id` |
 | `public/restaurant.txt` | `restaurant` | `id\|name\|category\|address\|phone\|open_time\|close_time\|latitude\|longitude\|rating\|review_count` |
-| `public/menu.txt` | `menu` | `id\|restaurant_id\|name\|price\|category\|spicy_level\|description` |
+| `public/menu.txt` | `menu` | `id\|restaurant_id\|name\|price\|category\|spicy_level\|description\|food_id` |
+| `public/menu_allergy.txt` | `menu_allergy` | `menu_id\|allergy_id\|risk_level\|ingredient` |
 | `private/users.txt` | `user` | `id\|login_id\|password\|nickname\|created_at` |
 | `private/preferences.txt` | `user_preference` | `user_id\|spicy_level\|price_min\|price_max\|max_distance` |
 | `private/user_allergies.txt` | `user_allergy` | `user_id\|allergy_id\|severity` |
@@ -210,6 +220,7 @@ ENUM 값도 DB와 같게 씁니다.
 | `history.type` | `RECOMMENDED` · `EATEN` · `VIEWED` · `BLOCKED` |
 | `dining_group.status` | `OPEN` · `VOTING` · `CLOSED` |
 | `user_allergy.severity` | `1`(거의 없음) ~ `5`(극도로 높음), 기본 `3` |
+| `menu_allergy.risk_level` | `CONTAINS`(함유) · `POSSIBLE`(혼입 가능) · `UNKNOWN`(불명) |
 
 예시 (`data/public/allergy.txt` — 마법사가 만드는 기본 내용):
 
@@ -235,7 +246,8 @@ ENUM 값도 DB와 같게 씁니다.
 아황산류
 ```
 
-`restaurant.txt`·`menu.txt`와 `private/`의 파일들은 **빈 파일로** 만들어집니다.
+`allergy.txt`·`mood.txt`를 뺀 나머지 `public/` 파일(음식 사전·재료·가게·메뉴 등)과
+`private/`의 파일들은 **빈 파일로** 만들어집니다.
 
 ### DB 모드와의 관계
 
