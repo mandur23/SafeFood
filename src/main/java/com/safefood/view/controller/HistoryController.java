@@ -24,9 +24,15 @@ public class HistoryController {
     @FXML private ComboBox<String> filterBox;
     @FXML private ListView<DemoData.HistoryRow> historyList;
     @FXML private ListView<DemoData.FavoriteRow> favoriteList;
+    @FXML private Label userLabel;
 
     @FXML
     private void initialize() {
+        if (com.safefood.dto.Session.getCurrentUser() != null) {
+            String myNick = com.safefood.dto.Session.getCurrentUser().getNickname();
+            userLabel.setText(myNick + "님 로그인 중");
+        }
+
         tabGroup.selectedToggleProperty().addListener((observable, before, after) -> {
             if (after == null && before != null) {
                 tabGroup.selectToggle(before);

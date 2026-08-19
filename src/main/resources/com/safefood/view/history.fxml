@@ -13,6 +13,8 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.safefood.view.controller.HistoryController">
@@ -23,11 +25,16 @@
 
     <top>
         <HBox spacing="8" alignment="CENTER_LEFT" styleClass="toolbar">
+            <ImageView fitHeight="32" fitWidth="32" preserveRatio="true">
+                <image>
+                    <Image url="@icon/logo.png"/>
+                </image>
+            </ImageView>
             <Button text="1. 메뉴 선택" styleClass="nav-button" onAction="#handleMain"/>
             <Button text="2. 내 정보" styleClass="nav-button" onAction="#handleProfile"/>
             <Button text="3. 기록" styleClass="nav-button, active"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="사용자님 로그인 중" styleClass="sub"/>
+            <Label fx:id="userLabel" text="사용자님 로그인 중" styleClass="sub"/>
             <Button text="로그아웃" onAction="#handleLogout"/>
         </HBox>
     </top>

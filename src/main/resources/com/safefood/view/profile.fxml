@@ -13,17 +13,24 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.safefood.view.controller.ProfileController">
 
     <top>
         <HBox spacing="8" alignment="CENTER_LEFT" styleClass="toolbar">
+            <ImageView fitHeight="32" fitWidth="32" preserveRatio="true">
+                <image>
+                    <Image url="@icon/logo.png"/>
+                </image>
+            </ImageView>
             <Button text="1. 메뉴 선택" styleClass="nav-button" onAction="#handleMain"/>
             <Button text="2. 내 정보" styleClass="nav-button, active"/>
             <Button text="3. 기록" styleClass="nav-button" onAction="#handleHistory"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="사용자님 로그인 중" styleClass="sub"/>
+            <Label fx:id="userLabel" text="사용자님 로그인 중" styleClass="sub"/>
             <Button text="로그아웃" onAction="#handleLogout"/>
         </HBox>
     </top>
@@ -81,12 +88,10 @@
                         <Label text="예산 범위" styleClass="field-label"/>
                         <Label fx:id="priceLabel" text="8,000원 ~ 15,000원" styleClass="accent-text"/>
                         <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Label text="하한" styleClass="sub" minWidth="30"/>
-                            <Slider fx:id="priceMin" min="0" max="30000" value="8000" HBox.hgrow="ALWAYS"/>
-                        </HBox>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
                             <Label text="상한" styleClass="sub" minWidth="30"/>
-                            <Slider fx:id="priceMax" min="0" max="30000" value="15000" HBox.hgrow="ALWAYS"/>
+                            <Slider fx:id="priceMax" min="0" max="30000" value="15000"
+                            majorTickUnit="1000" minorTickCount="0" snapToTicks="true"
+                            showTickMarks="true" showTickLabels="true" HBox.hgrow="ALWAYS"/>
                         </HBox>
 
                         <VBox spacing="4">

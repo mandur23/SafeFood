@@ -28,7 +28,7 @@ Java로 개발하는 B팀 팀 프로젝트입니다.
 | 문서 | 버전 | 다루는 내용 |
 |------|------|-------------|
 | 기능 설계서 | v2.0 | 기능 48개(A/R/G/S/L/M/H), 구현 우선순위 1~3차, 소켓 프로토콜, 추천·병합 알고리즘 |
-| 데이터베이스 설계서 | v2.0 | 테이블 18개 · 외래 키 26개, 컬럼 정의, ENUM, 시드 데이터, 쿼리 시나리오 |
+| 데이터베이스 설계서 | v2.0 | 테이블 22개 · 외래 키 31개, 컬럼 정의, ENUM, 시드 데이터, 쿼리 시나리오 |
 | UI 설계서 | v2.0 | 화면 14종(SC-01~SC-14), 화면 전이, 색상 팔레트, 공통 컴포넌트 규칙 |
 | [SetupWizard.md](docs/SetupWizard.md) | — | 개발 환경 설정 마법사 사용법, `data/` 파일 모드 |
 
@@ -364,7 +364,9 @@ mvn compile exec:java
 
 ## 🗄️ 데이터베이스 스키마
 
-테이블 18개 · 외래 키 26개. **데이터베이스 설계서 v2.0**이 기준입니다.
+테이블 22개 · 외래 키 31개. **데이터베이스 설계서 v2.0**이 기준입니다.
+(음식 사전 · 재료 테이블 4개와 `menu.food_id` · `menu_allergy.ingredient` 컬럼은
+v2.0 이후 추가분입니다 — 설계서에 반영해 주세요.)
 
 > ⚠️ **같은 스키마가 세 곳에 있습니다. 고칠 때는 셋을 함께 고쳐 주세요.**
 > 하나만 고치면 다음 사람이 틀린 쪽을 믿게 됩니다.
@@ -434,6 +436,64 @@ CREATE TABLE user_allergy (
 > `severity`는 POSSIBLE 등급 메뉴의 **감점 폭**에 씁니다.
 > 같은 땅콩 알레르기라도 심각도가 높은 사용자에게는 혼입 가능 메뉴의 순위를 크게 낮춥니다.
 
+### 음식 사전 · 재료 (공공데이터)
+
+공공데이터(농진청 메뉴젠 등)의 음식·재료 정보는 식당 메뉴(`menu`)에 직접 넣지 않고
+**음식 사전(`food`)**으로 받습니다. 음식 사전에는 소속 식당·가격이 없으므로
+`menu`의 `restaurant_id NOT NULL` · `price NOT NULL` 제약과 충돌하지 않습니다.
+식당 메뉴는 `menu.food_id`로 사전과 연결합니다.
+
+```sql
+-- 음식 사전 (공공데이터 원본)
+CREATE TABLE food (
+    id       INT AUTO_INCREMENT PRIMARY KEY,
+    food_cd  VARCHAR(20) NOT NULL UNIQUE,       -- 외부 음식코드. 임포트 재실행 시 upsert 기준
+    name     VARCHAR(100) NOT NULL,
+    category VARCHAR(50)
+);
+
+-- 재료 마스터
+CREATE TABLE ingredient (
+    id   INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE           -- 생크림 / 새우젓 / 두부 ...
+);
+
+-- 음식별 재료 구성
+CREATE TABLE food_ingredient (
+    food_id       INT NOT NULL,
+    ingredient_id INT NOT NULL,
+    quantity      VARCHAR(50),                  -- "30g", "1/2컵" 등 원문 그대로
+    PRIMARY KEY (food_id, ingredient_id),
+    FOREIGN KEY (food_id)       REFERENCES food(id),
+    FOREIGN KEY (ingredient_id) REFERENCES ingredient(id)
+);
+
+-- 재료 → 알레르기 매핑 (예: 생크림 → 우유)
+CREATE TABLE ingredient_allergy (
+    ingredient_id INT NOT NULL,
+    allergy_id    INT NOT NULL,
+    PRIMARY KEY (ingredient_id, allergy_id),
+    FOREIGN KEY (ingredient_id) REFERENCES ingredient(id),
+    FOREIGN KEY (allergy_id)    REFERENCES allergy(id)
+);
+```
+
+> 메뉴의 알레르기(`menu_allergy`)는 `menu → food → food_ingredient → ingredient_allergy`
+> 경로로 자동 도출할 수 있습니다. 매핑된 재료는 `CONTAINS`로, 매핑 안 된 재료가 남은
+> 메뉴는 보수적으로 `UNKNOWN`으로 남깁니다.
+
+공공데이터 임포트는 `com.safefood.tool.MenuGenImporter`가 담당합니다.
+`data/public/`의 음식 사전 파일 4종에 upsert 하고, `config.properties`에 `db.url`이
+있으면 **MySQL에도 같은 내용을 반영**하므로 여러 번 실행해도 안전합니다.
+(DB 반영은 음식 `food_cd`·재료 이름 기준이라 DB의 id가 파일과 달라도 됩니다)
+
+```bash
+mvn compile exec:java -Pimport-food -Dexec.args="--food=콩나물국"
+```
+
+서비스 키는 `--key=` 인자 → 환경 변수 `MENUGEN_API_KEY` → `config.properties`의
+`menugen.api.key` 순서로 찾습니다. `--food=`을 빼면 전체 데이터를 가져옵니다.
+
 ### 맛집 · 메뉴
 
 ```sql
@@ -461,7 +521,9 @@ CREATE TABLE menu (
     category      VARCHAR(20),
     spicy_level   TINYINT,                      -- 0 ~ 5
     description   VARCHAR(255),
-    FOREIGN KEY (restaurant_id) REFERENCES restaurant(id)
+    food_id       INT,                          -- 음식 사전 연결 (수기 등록 메뉴는 NULL)
+    FOREIGN KEY (restaurant_id) REFERENCES restaurant(id),
+    FOREIGN KEY (food_id)       REFERENCES food(id)
 );
 
 -- 메뉴 ↔ 알레르기 매칭 (위험도 포함)
@@ -469,6 +531,7 @@ CREATE TABLE menu_allergy (
     menu_id     INT NOT NULL,
     allergy_id  INT NOT NULL,
     risk_level  ENUM('CONTAINS', 'POSSIBLE', 'UNKNOWN') NOT NULL,
+    ingredient  VARCHAR(100),                   -- 원인 재료 표시용 (예: "생크림, 치즈")
     PRIMARY KEY (menu_id, allergy_id),
     FOREIGN KEY (menu_id)    REFERENCES menu(id),
     FOREIGN KEY (allergy_id) REFERENCES allergy(id)
@@ -806,7 +869,7 @@ CREATE TABLE feedback (
 - [x] 애플리케이션 형태 결정 — **JavaFX 데스크톱 앱**
 - [x] 기능 우선순위 확정 (기능 48개를 1·2·3차로 구분)
 - [x] 설계 문서 작성 (기능 · DB · UI 설계서 v2.0)
-- [x] DB 스키마 확정 (테이블 18개 · 외래 키 26개)
+- [x] DB 스키마 확정 (테이블 22개 · 외래 키 31개)
 - [ ] `dto` · `dao` 패키지 다시 만들기 <!-- 8월 6일 커밋에서 삭제된 상태 -->
 - [ ] 지도 API 선택(Kakao / Naver) 및 키 발급
 - [ ] 테이블 생성 (팀원별 Setup Wizard 실행)

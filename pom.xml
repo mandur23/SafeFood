@@ -128,6 +128,21 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>import-food</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <configuration>
+                            <mainClass>com.safefood.tool.MenuGenImporter</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>

@@ -10,5 +10,7 @@ db.password=
 
 map.api.key=
 
+menugen.api.key=
+
 socket.host=localhost
 socket.port=5000
