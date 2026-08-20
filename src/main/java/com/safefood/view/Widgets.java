@@ -58,7 +58,7 @@ public final class Widgets {
         return badge;
     }
 
-    public static Label safetyBadge(DemoData.Safety safety) {
+    public static Label safetyBadge(com.safefood.dto.RecommendationDto.Safety safety) {
         Label badge = new Label(safety.label);
         badge.getStyleClass().addAll("safety", safety.styleClass);
         return badge;

@@ -16,7 +16,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-
 import java.util.ArrayList;
 
 public class HistoryController {
@@ -25,8 +24,10 @@ public class HistoryController {
     @FXML private ToggleButton historyTab;
     @FXML private ComboBox<String> filterBox;
     @FXML private ListView<com.safefood.dto.HistoryDto> historyList;
-    @FXML private ListView<DemoData.FavoriteRow> favoriteList;
+    @FXML private ListView<com.safefood.dto.FavoriteDto> favoriteList;
     @FXML private Label userLabel;
+
+    private java.util.List<com.safefood.dto.HistoryDto> allHistories = new java.util.ArrayList<>();
 
     @FXML
     private void initialize() {
@@ -61,12 +62,43 @@ public class HistoryController {
 
     private void setUpHistoryList() {
         com.safefood.dto.UserDto me = com.safefood.dto.Session.getCurrentUser();
-        java.util.List<com.safefood.dto.HistoryDto> realData = (me != null && me.getId() != -1) 
+
+        allHistories = (me != null && me.getId() != -1) 
                 ? new com.safefood.service.HistoryService().getHistories(me.getId())
                 : new java.util.ArrayList<>();
 
-        historyList.setItems(FXCollections.observableArrayList(realData));
+        // 초기 화면에 전체 데이터 띄움
+        historyList.setItems(FXCollections.observableArrayList(allHistories));
         historyList.setPlaceholder(Widgets.sub("아직 기록이 없습니다."));
+
+        // 콤보박스
+        filterBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null || "전체 보기".equals(newValue)) {
+                historyList.setItems(FXCollections.observableArrayList(allHistories));
+                return;
+            }
+
+            // 한글 메뉴를 ENUM으로
+            String targetType = switch (newValue){
+                case "추천받음" -> "RECOMMENDED";
+                case "먹음" -> "EATEN";
+                case "조회함" -> "VIEWED";
+                case "차단됨" -> "BLOCKED";
+                default -> "";
+            };
+
+            // 보관함에서 타입이 일치하는 것만 필터링
+            java.util.List<com.safefood.dto.HistoryDto> filtered = new java.util.ArrayList<>();
+
+            for (com.safefood.dto.HistoryDto dto : allHistories) {
+                if (dto.getType().equals(targetType)) {
+                    filtered.add(dto);
+                }
+            }
+
+            historyList.setItems(FXCollections.observableArrayList(filtered));
+        });
+
         historyList.setCellFactory(view -> new ListCell<>() {
             @Override
             protected void updateItem(com.safefood.dto.HistoryDto row, boolean empty) {
@@ -86,8 +118,32 @@ public class HistoryController {
                 boolean eaten = "EATEN".equals(row.getType());
                 rate.setVisible(eaten);
                 rate.setManaged(eaten);
-                rate.setOnAction(event ->
-                        AppNav.info("좋아요 / 만족도 1~5점을 입력받는 자리입니다. (H-04)"));
+                
+                if (row.getFeedbackId() > 0) {
+                    rate.setDisable(true);
+                    rate.setText("평가완료");
+                }
+
+                rate.setOnAction(event -> {
+                    java.util.List<Integer> choices = java.util.List.of(5, 4, 3, 2, 1);
+                    javafx.scene.control.ChoiceDialog<Integer> dialog = new javafx.scene.control.ChoiceDialog<>(5, choices);
+                    dialog.setTitle("식사 평가");
+                    dialog.setHeaderText(row.getMenu() + "은(는) 어떠셨나요?");
+                    dialog.setContentText("별점을 선택해주세요 (1~5점):");
+                    
+                    java.util.Optional<Integer> result = dialog.showAndWait();
+                    result.ifPresent(rating -> {
+                        boolean success = new com.safefood.service.FeedbackService()
+                                .saveFeedback(me.getId(), row.getHistoryId(), row.getMenuId(), rating);
+                        if (success) {
+                            com.safefood.view.AppNav.info("평가가 저장되었습니다!\n(앞으로 추천 알고리즘 가중치에 반영됩니다)");
+                            rate.setDisable(true);
+                            rate.setText("평가완료");
+                        } else {
+                            com.safefood.view.AppNav.error("평가 저장에 실패했습니다.");
+                        }
+                    });
+                });
 
                 HBox cell = new HBox(12, Widgets.statusLabel(row.getType()), text, rate);
                 cell.setAlignment(Pos.CENTER_LEFT);
@@ -97,28 +153,36 @@ public class HistoryController {
     }
 
     private void setUpFavoriteList() {
-        favoriteList.setItems(FXCollections.observableArrayList(DemoData.FAVORITES));
+        com.safefood.dto.UserDto me = com.safefood.dto.Session.getCurrentUser();
+        java.util.List<com.safefood.dto.FavoriteDto> realData = (me != null && me.getId() != -1) 
+                ? new com.safefood.service.FavoriteService().getFavorites(me.getId())
+                : new java.util.ArrayList<>();
+
+        favoriteList.setItems(FXCollections.observableArrayList(realData));
         favoriteList.setPlaceholder(Widgets.sub("찜한 가게가 없습니다."));
         favoriteList.setCellFactory(view -> new ListCell<>() {
             @Override
-            protected void updateItem(DemoData.FavoriteRow row, boolean empty) {
+            protected void updateItem(com.safefood.dto.FavoriteDto row, boolean empty) {
                 super.updateItem(row, empty);
                 if (empty || row == null) {
                     setGraphic(null);
                     return;
                 }
-                Label name = new Label(row.restaurant());
+                Label name = new Label(row.getRestaurant());
                 name.getStyleClass().add("section-title");
 
                 VBox text = new VBox(2, name,
-                        Widgets.sub("대표 메뉴 " + row.menu()
-                                + "  ·  ★ " + row.rating()
-                                + "  ·  리뷰 " + row.reviewCount()));
+                        Widgets.sub("대표 메뉴 " + row.getMenu()
+                                + "  ·  ★ " + row.getRating()
+                                + "  ·  리뷰 " + row.getReviewCount()));
                 HBox.setHgrow(text, Priority.ALWAYS);
 
                 Button remove = new Button("♥ 찜 취소");
                 remove.getStyleClass().add("outline");
-                remove.setOnAction(event -> favoriteList.getItems().remove(row));
+                remove.setOnAction(event -> {
+                    new com.safefood.service.FavoriteService().removeFavorite(row.getFavoriteId());
+                    favoriteList.getItems().remove(row);
+                });
 
                 HBox cell = new HBox(12, text, remove);
                 cell.setAlignment(Pos.CENTER_LEFT);
