@@ -17,12 +17,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+import java.util.ArrayList;
+
 public class HistoryController {
 
     @FXML private ToggleGroup tabGroup;
     @FXML private ToggleButton historyTab;
     @FXML private ComboBox<String> filterBox;
-    @FXML private ListView<DemoData.HistoryRow> historyList;
+    @FXML private ListView<com.safefood.dto.HistoryDto> historyList;
     @FXML private ListView<DemoData.FavoriteRow> favoriteList;
     @FXML private Label userLabel;
 
@@ -58,31 +60,36 @@ public class HistoryController {
     }
 
     private void setUpHistoryList() {
-        historyList.setItems(FXCollections.observableArrayList(DemoData.HISTORY));
+        com.safefood.dto.UserDto me = com.safefood.dto.Session.getCurrentUser();
+        java.util.List<com.safefood.dto.HistoryDto> realData = (me != null && me.getId() != -1) 
+                ? new com.safefood.service.HistoryService().getHistories(me.getId())
+                : new java.util.ArrayList<>();
+
+        historyList.setItems(FXCollections.observableArrayList(realData));
         historyList.setPlaceholder(Widgets.sub("아직 기록이 없습니다."));
         historyList.setCellFactory(view -> new ListCell<>() {
             @Override
-            protected void updateItem(DemoData.HistoryRow row, boolean empty) {
+            protected void updateItem(com.safefood.dto.HistoryDto row, boolean empty) {
                 super.updateItem(row, empty);
                 if (empty || row == null) {
                     setGraphic(null);
                     return;
                 }
-                Label menu = new Label(row.menu() + "  ·  " + row.restaurant());
+                Label menu = new Label(row.getMenu() + "  ·  " + row.getRestaurant());
                 menu.getStyleClass().add("section-title");
 
-                VBox text = new VBox(2, menu, Widgets.sub(row.date() + "  ·  " + row.note()));
+                VBox text = new VBox(2, menu, Widgets.sub(row.getDate() + "  ·  " + row.getNote()));
                 HBox.setHgrow(text, Priority.ALWAYS);
 
                 Button rate = new Button("평가하기");
                 rate.getStyleClass().add("outline");
-                boolean eaten = "EATEN".equals(row.type());
+                boolean eaten = "EATEN".equals(row.getType());
                 rate.setVisible(eaten);
                 rate.setManaged(eaten);
                 rate.setOnAction(event ->
                         AppNav.info("좋아요 / 만족도 1~5점을 입력받는 자리입니다. (H-04)"));
 
-                HBox cell = new HBox(12, Widgets.statusLabel(row.type()), text, rate);
+                HBox cell = new HBox(12, Widgets.statusLabel(row.getType()), text, rate);
                 cell.setAlignment(Pos.CENTER_LEFT);
                 setGraphic(cell);
             }

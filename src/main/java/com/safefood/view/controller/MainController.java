@@ -98,8 +98,26 @@ public class MainController {
                 (RestaurantDetailController controller) -> controller.setItem(item)));
 
         Button record = new Button("기록하기");
-        record.setOnAction(event -> AppNav.info("기록되었습니다. 다음 추천부터 중복으로 제외합니다."));
+        record.setOnAction(event -> {com.safefood.dto.UserDto me = com.safefood.dto.Session.getCurrentUser();
 
+            if(me == null || me.getId() == -1){
+                com.safefood.view.AppNav.warn("게스트는 기록을 저장할 수 없습니다.");
+                return;
+            }
+
+            com.safefood.service.HistoryService historyService = new com.safefood.service.HistoryService();
+
+            int realMenuIdInMyDb = 1;
+            boolean success = historyService.saveEatenHistory(me.getId(), realMenuIdInMyDb);
+
+            if(success){
+                com.safefood.view.AppNav.info("기록되었습니다!");
+            } else{
+                com.safefood.view.AppNav.error("저장에 실패했습니다.");
+            }
+
+        }
+        );
         record.setDisable(item.blocked());
 
         Region spacer = new Region();
