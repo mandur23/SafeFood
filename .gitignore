@@ -60,3 +60,4 @@ data/private/
 !data/private/.gitkeep
 
 .claude
+.idea

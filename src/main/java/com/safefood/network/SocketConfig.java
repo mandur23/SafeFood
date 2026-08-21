@@ -21,6 +21,13 @@ public final class SocketConfig {
     private SocketConfig() {
     }
 
+    /**
+     * 방장이 초대 코드에 담을 주소를 직접 지정할 때 씁니다 — 어댑터가 여럿이라
+     * {@link GroupServer#lanAddress()}가 엉뚱한 주소를 고를 때의 수동 지정용입니다.
+     * 기본값({@value #DEFAULT_HOST})이면 자동 판별을 씁니다.
+     *
+     * <p>참여자 쪽은 이 값을 보지 않습니다 — 접속 주소는 초대 코드에서 꺼냅니다.
+     */
     public static String host() {
         String value = load().getProperty("socket.host", "").trim();
         return value.isEmpty() ? DEFAULT_HOST : value;

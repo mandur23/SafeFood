@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  1j 맛집 상세 — 지도를 맨 위 전체 폭으로 올리고, 주소·영업시간·평점을 한 줄 메타로 접었습니다.
+  (예전에는 라벨-값 카드 세 칸이 세로로 쌓여 있었습니다)
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -13,44 +16,44 @@
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.safefood.view.controller.RestaurantDetailController"
-      fx:id="root" prefWidth="720" styleClass="screen" spacing="16">
-    <padding>
-        <Insets top="24" right="24" bottom="24" left="24"/>
-    </padding>
+      fx:id="root" prefWidth="640" spacing="0">
 
-    <VBox spacing="2">
-        <Label fx:id="restaurantName" styleClass="page-title"/>
-        <Label fx:id="menuName" styleClass="restaurant-name"/>
-        <Separator/>
-    </VBox>
-
-    <StackPane fx:id="mapArea" styleClass="panel" prefHeight="260">
-        <Label text="지도 영역&#10;(WebView + 지도 API JS SDK)" styleClass="sub" textAlignment="CENTER"/>
+    <!-- 지도 — 전체 폭, 여백 없음 -->
+    <StackPane fx:id="mapArea" styleClass="hero-map" prefHeight="230"
+               alignment="CENTER">
+        <Label text="지도 (Kakao Map WebView)" styleClass="sub"/>
+        <Label text="●" styleClass="map-pin" StackPane.alignment="BOTTOM_LEFT">
+            <StackPane.margin>
+                <Insets bottom="-22" left="36"/>
+            </StackPane.margin>
+        </Label>
     </StackPane>
 
-    <Label text="추천 근거" styleClass="section-title"/>
-    <TextArea fx:id="reasonArea" editable="false" wrapText="true" prefRowCount="3"
-              styleClass="readonly"/>
+    <VBox spacing="12">
+        <padding>
+            <Insets top="34" right="36" bottom="30" left="36"/>
+        </padding>
 
-    <VBox styleClass="card" spacing="10">
-        <VBox spacing="4">
-            <Label text="주소" styleClass="field-label"/>
-            <Label fx:id="addressLabel"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label fx:id="restaurantName" styleClass="page-title"/>
+            <Label fx:id="menuName" styleClass="restaurant-name"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="safetyTag" styleClass="safety"/>
+        </HBox>
+
+        <Label fx:id="metaLabel" styleClass="sub" wrapText="true"/>
+
+        <VBox styleClass="card, accent2" spacing="4">
+            <Label text="왜 추천했나요" styleClass="kicker"/>
+            <Label fx:id="reasonLabel" wrapText="true"/>
         </VBox>
-        <VBox spacing="4">
-            <Label text="영업시간" styleClass="field-label"/>
-            <Label fx:id="hoursLabel"/>
-        </VBox>
-        <VBox spacing="4">
-            <Label text="평점" styleClass="field-label"/>
-            <Label fx:id="ratingLabel"/>
-        </VBox>
+
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button text="길찾기 (카카오맵)" styleClass="primary" maxWidth="Infinity"
+                    HBox.hgrow="ALWAYS" onAction="#handleRoute"/>
+            <ToggleButton fx:id="favoriteButton" text="♡ 찜"/>
+            <Button text="먹었어요 기록" onAction="#handleRecord"/>
+            <Button text="닫기" styleClass="ghost-quiet" onAction="#handleClose"/>
+        </HBox>
     </VBox>
-
-    <HBox spacing="8" alignment="CENTER_LEFT">
-        <ToggleButton fx:id="favoriteButton" text="♡ 찜하기" styleClass="chip"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="길찾기" onAction="#handleRoute"/>
-        <Button text="닫기" styleClass="primary" onAction="#handleClose"/>
-    </HBox>
 </VBox>

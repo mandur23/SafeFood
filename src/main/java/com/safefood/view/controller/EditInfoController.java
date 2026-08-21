@@ -1,63 +1,90 @@
 package com.safefood.view.controller;
 
+import com.safefood.dto.Session;
+import com.safefood.dto.UserDto;
+import com.safefood.service.AuthService;
 import com.safefood.view.AppNav;
 import com.safefood.view.Widgets;
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
+/**
+ * 정보 변경 — 닉네임 중복 확인을 버튼에서 실시간 검증으로 옮겼습니다 (회원가입 1e 와 같은 방식).
+ */
 public class EditInfoController {
+
+    private static final Duration SETTLE = Duration.millis(400);
 
     @FXML private VBox root;
     @FXML private PasswordField currentPassword;
     @FXML private TextField nicknameField;
+    @FXML private Label nicknameHint;
     @FXML private PasswordField newPassword;
     @FXML private Label errorLabel;
 
+    private final AuthService authService = new AuthService();
+    private final PauseTransition nicknameSettle = new PauseTransition(SETTLE);
+
+    /** 마지막 조회 결과 — 조회 전이면 null. 지금 쓰는 닉네임이면 true 로 봅니다. */
+    private Boolean nicknameAvailable;
+
     @FXML
-    private void handleCheckNickname() {
+    private void initialize() {
+        UserDto me = Session.getCurrentUser();
+        if (me != null) {
+            nicknameField.setText(me.getNickname());
+            nicknameAvailable = true;   // 처음 값은 자기 것이라 그대로 둬도 됩니다
+        }
+
+        nicknameSettle.setOnFinished(event -> checkNickname());
+        nicknameField.textProperty().addListener((observable, before, after) -> {
+            nicknameAvailable = null;
+            Widgets.markField(nicknameField, null);
+            hide(nicknameHint);
+            nicknameSettle.playFromStart();
+        });
+    }
+
+    private void checkNickname() {
         String nickname = nicknameField.getText().trim();
-        if (nicknameField.getText().isBlank()) {
-            AppNav.warn("닉네임을 입력해 주세요.");
+        if (nickname.isBlank()) {
+            return;
+        }
+        UserDto me = Session.getCurrentUser();
+
+        // 내 원래 닉네임을 그대로 둔 경우는 중복이 아닙니다
+        if (me != null && nickname.equals(me.getNickname())) {
+            nicknameAvailable = true;
+            hint(true, "지금 쓰고 있는 닉네임이에요");
             return;
         }
 
-        // 내 원래 닉네임과 똑같이 치고 중복방지 누르는 상황 방지
-        if (nickname.equals(com.safefood.dto.Session.getCurrentUser().getNickname())) {
-            AppNav.info("현재 사용 중인 닉네임 입니다.");
-            return;
-        }
-
-        // 중복인지 확인 (서비스에 물어봄)
-        com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
-        if(authService.isNicknameAvailable(nickname)){
-            AppNav.info("사용할 수 있는 닉네임 입니다.");
-        }
-        else{
-            AppNav.warn("이미 누군가 사용 중인 닉네임입니다. 다른 닉네임을 골라주세요.");
-        }
+        nicknameAvailable = authService.isNicknameAvailable(nickname);
+        hint(nicknameAvailable, nicknameAvailable
+                ? "✓ 사용할 수 있어요" : "이미 누군가 쓰고 있어요");
     }
 
     @FXML
     private void handleSave() {
-        String currentPw =  currentPassword.getText();
+        String currentPw = currentPassword.getText();
         String newPw = newPassword.getText();
         String newNick = nicknameField.getText().trim();
 
-        if (currentPassword.getText().isBlank()) {
+        if (currentPw.isBlank()) {
             Widgets.showError(errorLabel, "현재 비밀번호를 입력해 주세요.");
             return;
         }
-
-        if(newNick.isBlank()){
+        if (newNick.isBlank()) {
             Widgets.showError(errorLabel, "닉네임을 입력해 주세요.");
             return;
         }
 
-        com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
-        com.safefood.dto.UserDto me = com.safefood.dto.Session.getCurrentUser();
+        UserDto me = Session.getCurrentUser();
 
         // 비밀번호 확인
         if (!authService.verifyPassword(currentPw, me.getPassword())) {
@@ -65,31 +92,46 @@ public class EditInfoController {
             return;
         }
 
-        // 닉네임 중복 검사
-        if(!newNick.equals(me.getNickname()) && !authService.isNicknameAvailable(newNick)){
-            Widgets.showError(errorLabel, "이미 사용중인 닉네임 입니다. 다른 닉네임을 사용해 주세요");
+        // 검증이 아직 안 돌았으면(빨리 눌렀거나 대기 중) 여기서 한 번에 확인합니다
+        if (nicknameAvailable == null) {
+            nicknameSettle.stop();
+            checkNickname();
+        }
+        if (Boolean.FALSE.equals(nicknameAvailable)) {
+            Widgets.showError(errorLabel, "이미 사용 중인 닉네임입니다. 다른 닉네임을 골라 주세요.");
             return;
         }
 
-        // 업데이트
-        boolean success = authService.updateProfile(me.getId(), newPw, newNick, me.getPassword());
-        if(success){
-            Widgets.hideError(errorLabel);
-            me.setNickname(newNick);
-            if(!newPw.isBlank()){
-                me.setPassword(newPw);
-            }
-
-            AppNav.close(root);
-            AppNav.info("개인정보가 성공적으로 변경되었습니다.");
-        }
-        else{
+        if (!authService.updateProfile(me.getId(), newPw, newNick, me.getPassword())) {
             Widgets.showError(errorLabel, "저장 중 오류가 발생했습니다.");
+            return;
         }
+
+        Widgets.hideError(errorLabel);
+        me.setNickname(newNick);
+        if (!newPw.isBlank()) {
+            me.setPassword(newPw);
+        }
+        AppNav.close(root);
+        AppNav.success("개인정보를 변경했어요");
     }
 
     @FXML
     private void handleCancel() {
         AppNav.close(root);
+    }
+
+    private void hint(boolean ok, String text) {
+        Widgets.markField(nicknameField, ok);
+        nicknameHint.getStyleClass().removeAll("hint-ok", "hint-bad");
+        nicknameHint.getStyleClass().add(ok ? "hint-ok" : "hint-bad");
+        nicknameHint.setText(text);
+        nicknameHint.setVisible(true);
+        nicknameHint.setManaged(true);
+    }
+
+    private static void hide(Label label) {
+        label.setVisible(false);
+        label.setManaged(false);
     }
 }

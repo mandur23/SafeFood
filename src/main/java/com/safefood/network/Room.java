@@ -52,6 +52,10 @@ public final class Room {
      * JOIN 처리 — 초대 코드가 맞는 사람만 받아들입니다 (README: 아무나 못 들어오게 막는 암호 역할).
      * 늦게 들어온 참여자에게는 현재 명단·병합 결과·후보·득표를 먼저 재전송해 화면을 맞춥니다.
      *
+     * <p>코드에는 접속 주소도 들어 있지만({@link InviteCode}) 여기서는 전체 문자열을 그대로 대조합니다 —
+     * 주소까지 일치해야 통과하므로 시크릿만 맞히는 것으로는 들어올 수 없습니다.
+     * 대소문자·구분선 차이는 {@link InviteCode#normalize}가 흡수합니다.
+     *
      * @return 입장 성공 여부. 실패하면 ERROR를 보낸 뒤 false — 호출한 쪽에서 연결을 끊습니다.
      */
     synchronized boolean join(ClientHandler handler, String code, String name) {
@@ -59,7 +63,7 @@ public final class Room {
             handler.send(Message.of(Message.Type.ERROR, "이미 종료된 방입니다."));
             return false;
         }
-        if (!inviteCode.equals(code)) {
+        if (!inviteCode.equals(InviteCode.normalize(code))) {
             handler.send(Message.of(Message.Type.ERROR, "존재하지 않는 초대 코드"));
             return false;
         }

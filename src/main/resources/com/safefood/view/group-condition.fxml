@@ -1,67 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  1g 그룹 조건 — 매번 처음부터 입력하던 화면을 '확인'으로 바꿨습니다.
+
+  값은 내 프로필에서 끌어옵니다. 바꿀 게 없으면 버튼 한 번이면 끝이고,
+  고칠 항목만 '수정'을 눌러 그 자리에서 펼칩니다.
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.safefood.view.controller.GroupConditionController"
-            fx:id="root" fitToWidth="true" prefWidth="660" prefHeight="620">
-    <VBox styleClass="screen" spacing="16">
-        <padding>
-            <Insets top="24" right="24" bottom="24" left="24"/>
-        </padding>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.safefood.view.controller.GroupConditionController"
+      fx:id="root" prefWidth="560" styleClass="sheet" spacing="16">
+    <padding>
+        <Insets top="30" right="34" bottom="30" left="34"/>
+    </padding>
 
-        <VBox spacing="4">
-            <Label text="그룹 조건 입력" styleClass="page-title"/>
-            <Label text="이 모임에서 적용할 조건을 확인해 주세요." styleClass="page-subtitle" wrapText="true"/>
-            <Separator/>
-        </VBox>
+    <VBox spacing="4">
+        <Label text="이 조건으로 참여할까요?" styleClass="page-title"/>
+        <Label fx:id="sourceLabel" styleClass="page-subtitle" wrapText="true"/>
+    </VBox>
 
-        <VBox styleClass="card" spacing="10">
-            <Label text="보유 알레르기" styleClass="section-title"/>
-            <Label text="한 명이라도 못 먹는 메뉴는 후보에서 빠집니다. 빠짐없이 골라 주세요."
-                   styleClass="sub" wrapText="true"/>
+    <VBox styleClass="card, soft" spacing="12">
+
+        <!-- 알레르기 -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="알레르기" styleClass="field-label" minWidth="76"/>
+            <FlowPane fx:id="allergySummary" hgap="6" vgap="6" HBox.hgrow="ALWAYS"/>
+            <Button text="수정" styleClass="ghost-quiet" minWidth="-Infinity"
+                    onAction="#handleEditAllergy"/>
+        </HBox>
+        <VBox fx:id="allergyEditor" spacing="8" visible="false" managed="false">
             <FlowPane fx:id="allergyPane" styleClass="chip-area" hgap="8" vgap="8"/>
+            <Label text="한 명이라도 못 먹는 메뉴는 후보에서 빠집니다. 빠짐없이 골라 주세요."
+                   styleClass="micro" wrapText="true"/>
         </VBox>
 
-        <VBox styleClass="card" spacing="10">
-            <Label text="매운맛 한계" styleClass="section-title"/>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="안매움(0)" styleClass="sub"/>
-                <Slider fx:id="spicySlider" min="0" max="5" value="2"
-                        majorTickUnit="1" minorTickCount="0" snapToTicks="true"
-                        showTickMarks="true" HBox.hgrow="ALWAYS"/>
-                <Label text="최강매움(5)" styleClass="sub"/>
-                <Label fx:id="spicyValue" text="2단계" styleClass="accent-text" minWidth="60"/>
-            </HBox>
-        </VBox>
+        <Region styleClass="rule"/>
 
-        <VBox styleClass="card" spacing="10">
-            <Label text="예산 상한" styleClass="section-title"/>
-            <Label text="이 모임에서 쓸 수 있는 1인 예산입니다." styleClass="sub"/>
+        <!-- 맵기 -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="맵기 한계" styleClass="field-label" minWidth="76"/>
+            <Label fx:id="spicySummary" styleClass="tag, neutral"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="수정" styleClass="ghost-quiet" onAction="#handleEditSpicy"/>
+        </HBox>
+        <HBox fx:id="spicyEditor" spacing="12" alignment="CENTER_LEFT"
+              visible="false" managed="false">
+            <Label text="안 매움" styleClass="sub"/>
+            <Slider fx:id="spicySlider" min="0" max="5" value="2"
+                    majorTickUnit="1" minorTickCount="0" snapToTicks="true"
+                    HBox.hgrow="ALWAYS"/>
+            <Label text="아주 매움" styleClass="sub"/>
+        </HBox>
+
+        <Region styleClass="rule"/>
+
+        <!-- 예산 -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="예산" styleClass="field-label" minWidth="76"/>
+            <Label fx:id="budgetSummary" styleClass="tag, neutral"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="수정" styleClass="ghost-quiet" onAction="#handleEditBudget"/>
+        </HBox>
+        <VBox fx:id="budgetEditor" visible="false" managed="false">
             <ComboBox fx:id="budgetBox" maxWidth="Infinity"/>
         </VBox>
 
-        <VBox styleClass="card" spacing="10">
-            <Label text="내 위치 (선택)" styleClass="section-title"/>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button text="내 위치 가져오기" onAction="#handlePickLocation"/>
-                <Label fx:id="locationLabel" text="아직 설정하지 않았습니다." styleClass="sub"/>
-            </HBox>
-        </VBox>
+        <Region styleClass="rule"/>
 
-        <HBox spacing="8" alignment="CENTER_RIGHT">
+        <!-- 위치 -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="위치" styleClass="field-label" minWidth="76"/>
+            <Label fx:id="locationSummary" styleClass="tag, accent2"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="준비 완료" styleClass="primary" onAction="#handleReady"/>
+            <Button text="다시 가져오기" styleClass="ghost-quiet" onAction="#handlePickLocation"/>
         </HBox>
     </VBox>
-</ScrollPane>
+
+    <Button text="이대로 준비 완료 ✓" styleClass="primary" maxWidth="Infinity"
+            onAction="#handleReady"/>
+</VBox>

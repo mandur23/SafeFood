@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  1d 온보딩 — 한 장에 다 쏟아붓지 않고 3단계로 나눴습니다.
+
+  단계마다 기본값이 이미 들어 있어서, 그대로 두고 '다음'만 눌러도 끝납니다.
+  '나중에 할게요'로 통째로 건너뛸 수도 있습니다 (기본값으로 저장).
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
@@ -15,61 +22,88 @@
 <ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.safefood.view.controller.OnboardingController"
             fitToWidth="true">
-    <VBox alignment="TOP_CENTER" styleClass="screen" spacing="16">
+    <VBox alignment="TOP_CENTER" styleClass="screen">
         <padding>
-            <Insets top="24" right="24" bottom="24" left="24"/>
+            <Insets top="36" right="40" bottom="40" left="40"/>
         </padding>
 
-        <VBox maxWidth="860" spacing="16">
+        <VBox maxWidth="700" styleClass="card, soft, elev" spacing="20">
+
+            <!-- ── 진행 표시 ─────────────────────────────────── -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <Label fx:id="dot1" text="1" styleClass="step-dot, now"/>
+                    <Region fx:id="line1" styleClass="step-line"/>
+                    <Label fx:id="dot2" text="2" styleClass="step-dot"/>
+                    <Region fx:id="line2" styleClass="step-line"/>
+                    <Label fx:id="dot3" text="3" styleClass="step-dot"/>
+                </HBox>
+
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <Label fx:id="name1" text="취향" styleClass="sub"/>
+                    <Label text="→" styleClass="sub"/>
+                    <Label fx:id="name2" text="알레르기" styleClass="sub"/>
+                    <Label text="→" styleClass="sub"/>
+                    <Label fx:id="name3" text="예산·거리" styleClass="sub"/>
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+                <Hyperlink text="나중에 할게요" onAction="#handleSkip"/>
+            </HBox>
 
             <VBox spacing="4">
-                <Label text="초기 취향 및 알레르기 온보딩 설문" styleClass="page-title"/>
-                <Label text="추천에 필요한 최소 조건만 받습니다. 나중에 내 프로필에서 바꿀 수 있습니다."
-                       styleClass="page-subtitle" wrapText="true"/>
-                <Separator/>
+                <Label fx:id="stepTitle" styleClass="page-title"/>
+                <Label fx:id="stepSubtitle" styleClass="page-subtitle" wrapText="true"/>
             </VBox>
 
-            <VBox styleClass="card" spacing="10">
-                <Label text="매운맛 선호 정도" styleClass="section-title"/>
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Label text="안매움(0)" styleClass="sub"/>
-                    <Slider fx:id="spicySlider" min="0" max="5" value="2"
-                            majorTickUnit="1" minorTickCount="0" snapToTicks="true"
-                            showTickMarks="true" HBox.hgrow="ALWAYS"/>
-                    <Label text="최강매움(5)" styleClass="sub"/>
-                    <Label fx:id="spicyValue" text="2단계" styleClass="accent-text" minWidth="60"/>
-                </HBox>
+            <!-- ── 1단계 · 취향 ──────────────────────────────── -->
+            <VBox fx:id="step1" spacing="16">
+                <VBox styleClass="card, plain" spacing="10">
+                    <Label text="매운맛은 어디까지 괜찮으세요?" styleClass="section-title"/>
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Label text="안 매움" styleClass="sub"/>
+                        <Slider fx:id="spicySlider" min="0" max="5" value="2"
+                                majorTickUnit="1" minorTickCount="0" snapToTicks="true"
+                                HBox.hgrow="ALWAYS"/>
+                        <Label text="아주 매움" styleClass="sub"/>
+                        <Label fx:id="spicyValue" text="2단계" styleClass="accent-text"
+                               minWidth="56"/>
+                    </HBox>
+                </VBox>
+
+                <VBox styleClass="card, plain" spacing="10">
+                    <Label text="좋아하는 음식 종류" styleClass="section-title"/>
+                    <Label text="여러 개 고를 수 있어요." styleClass="sub"/>
+                    <FlowPane fx:id="categoryPane" styleClass="chip-area" hgap="8" vgap="8"/>
+                </VBox>
             </VBox>
 
-            <VBox styleClass="card" spacing="10">
-                <Label text="선호 음식 종류" styleClass="section-title"/>
-                <Label text="여러 개 고를 수 있습니다." styleClass="sub"/>
-                <FlowPane fx:id="categoryPane" styleClass="chip-area" hgap="8" vgap="8"/>
+            <!-- ── 2단계 · 알레르기 ──────────────────────────── -->
+            <VBox fx:id="step2" spacing="16" visible="false" managed="false">
+                <FlowPane fx:id="allergyPane" styleClass="chip-area" hgap="8" vgap="8"/>
+                <VBox fx:id="severityBox" spacing="10"/>
             </VBox>
 
-            <VBox styleClass="card" spacing="10">
-                <Label text="예산과 거리" styleClass="section-title"/>
-                <VBox spacing="4">
-                    <Label text="한끼 예산 상한" styleClass="field-label"/>
+            <!-- ── 3단계 · 예산·거리 ─────────────────────────── -->
+            <VBox fx:id="step3" spacing="16" visible="false" managed="false">
+                <VBox styleClass="card, plain" spacing="10">
+                    <Label text="한 끼 예산 상한" styleClass="section-title"/>
                     <ComboBox fx:id="budgetBox" maxWidth="Infinity"/>
                 </VBox>
-                <VBox spacing="4">
-                    <Label text="최대 탐색 거리" styleClass="field-label"/>
-                    <ComboBox fx:id="distanceBox" maxWidth="Infinity"/>
+
+                <VBox styleClass="card, plain" spacing="10">
+                    <Label text="최대 탐색 거리" styleClass="section-title"/>
+                    <HBox fx:id="distanceSeg" alignment="CENTER_LEFT"/>
                 </VBox>
             </VBox>
 
-            <VBox styleClass="card" spacing="10">
-                <Label text="보유 알레르기 등록" styleClass="section-title"/>
-                <Label text="식약처 고시 표시 대상 19종입니다. 해당하는 것을 모두 고르세요." styleClass="sub"/>
-                <FlowPane fx:id="allergyPane" styleClass="chip-area" hgap="8" vgap="8"/>
-
-                <VBox fx:id="severityBox" spacing="6"/>
-            </VBox>
-
-            <HBox spacing="8" alignment="CENTER_RIGHT">
+            <!-- ── 이동 ──────────────────────────────────────── -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button fx:id="prevButton" text="← 이전" styleClass="ghost"
+                        onAction="#handlePrev"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="추천 알고리즘 시작 →" styleClass="primary" onAction="#handleStart"/>
+                <Button fx:id="nextButton" text="다음 →" styleClass="primary"
+                        onAction="#handleNext"/>
             </HBox>
         </VBox>
     </VBox>

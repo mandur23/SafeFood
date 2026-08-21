@@ -19,20 +19,17 @@
 
     <VBox spacing="4">
         <Label text="방 참여하기" styleClass="page-title"/>
-        <Label text="전달받은 접속 주소와 초대 코드를 입력하세요."
+        <Label text="전달받은 초대 코드를 입력하세요. 접속 주소는 코드에서 자동으로 찾습니다."
                styleClass="page-subtitle" wrapText="true"/>
         <Separator/>
     </VBox>
 
     <VBox styleClass="card" spacing="10">
-        <VBox spacing="4">
-            <Label text="접속 주소" styleClass="field-label"/>
-            <TextField fx:id="addressField" promptText="예) 192.168.0.11:5000"/>
-        </VBox>
-
-        <VBox spacing="4">
+        <VBox spacing="6">
             <Label text="초대 코드" styleClass="field-label"/>
-            <TextField fx:id="codeField" promptText="전달받은 초대 코드"/>
+            <TextField fx:id="codeField" styleClass="invite-code"
+                       promptText="6WMK4-2A0P8-Q3XN"/>
+            <Label fx:id="previewLabel" styleClass="sub" wrapText="true"/>
         </VBox>
 
         <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"
