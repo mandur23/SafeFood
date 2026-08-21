@@ -1,32 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  1f 같이 먹기 — 기존 group-option + create-room + join-room 을 한 다이얼로그로 합친 화면.
+
+  방 만들기와 참여가 한 창에 같이 있어서, 어느 쪽을 고르든 화면 전환이 사라집니다.
+  방 만들기는 누른 자리에서 코드 상태로 바뀝니다 (createIntro → createdBox).
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.safefood.view.controller.GroupOptionController"
-      fx:id="root" prefWidth="420" styleClass="screen" spacing="16">
-    <padding>
-        <Insets top="24" right="24" bottom="24" left="24"/>
-    </padding>
+      fx:id="root" prefWidth="560" styleClass="sheet" spacing="16">
 
     <VBox spacing="4">
         <Label text="같이 먹기" styleClass="page-title"/>
-        <Label text="방을 새로 만들지, 전달받은 주소로 참여할지 고르세요."
+        <Label text="초대 코드 하나면 됩니다 — 접속 주소는 코드에서 자동으로 찾아요."
                styleClass="page-subtitle" wrapText="true"/>
-        <Separator/>
     </VBox>
 
-    <VBox styleClass="card" spacing="10">
-        <Button text="방 만들기" styleClass="primary" maxWidth="Infinity" onAction="#handleCreate"/>
-        <Label text="내가 서버가 되어 방을 엽니다. 접속 주소와 초대 코드를 일행에게 전달하세요."
-               styleClass="sub" wrapText="true"/>
+    <!-- ── 방 만들기 ─────────────────────────────────────────── -->
+    <VBox fx:id="createCard" styleClass="card, accent, elev" spacing="12">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="방 만들기" styleClass="section-title"/>
+            <Label fx:id="hostTag" text="내가 방장" styleClass="tag, accent"
+                   visible="false" managed="false"/>
+        </HBox>
 
-        <Button text="방 참여하기" maxWidth="Infinity" onAction="#handleJoin"/>
-        <Label text="전달받은 접속 주소와 초대 코드로 방장 서버에 접속합니다."
-               styleClass="sub" wrapText="true"/>
+        <!-- 만들기 전 -->
+        <VBox fx:id="createIntro" spacing="12">
+            <Label text="내가 서버가 되어 방을 엽니다. 만들어진 초대 코드만 일행에게 보내면 됩니다."
+                   styleClass="sub" wrapText="true"/>
+            <HBox alignment="CENTER_RIGHT">
+                <Button fx:id="createButton" text="방 만들기" styleClass="primary"
+                        onAction="#handleCreate"/>
+            </HBox>
+        </VBox>
+
+        <!-- 만든 뒤 — 같은 카드가 코드 상태로 바뀝니다 -->
+        <VBox fx:id="createdBox" spacing="10" visible="false" managed="false">
+            <Label text="방이 만들어졌어요. 이 초대 코드만 일행에게 보내세요." wrapText="true"/>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <TextField fx:id="codeField" editable="false"
+                           styleClass="readonly, invite-code" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="copyButton" text="복사" onAction="#handleCopyCode"/>
+            </HBox>
+            <Label fx:id="addressLabel" styleClass="micro" wrapText="true"/>
+            <Label fx:id="discoveryLabel" styleClass="micro" wrapText="true"/>
+            <HBox alignment="CENTER_RIGHT">
+                <Button text="대기실 입장 →" styleClass="primary" onAction="#handleEnter"/>
+            </HBox>
+        </VBox>
     </VBox>
+
+    <!-- ── 구분 ─────────────────────────────────────────────── -->
+    <HBox spacing="12" alignment="CENTER">
+        <Region styleClass="rule" HBox.hgrow="ALWAYS"/>
+        <Label text="또는 초대받았다면" styleClass="sub"/>
+        <Region styleClass="rule" HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <!-- ── 참여 ─────────────────────────────────────────────── -->
+    <VBox fx:id="joinBox" spacing="8">
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <TextField fx:id="joinField" styleClass="invite-code"
+                       promptText="6WMK4-2A0P8-Q3XN" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="joinButton" text="참여" styleClass="primary" onAction="#handleJoin"/>
+        </HBox>
+
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <ProgressIndicator fx:id="progress" prefWidth="14" prefHeight="14"
+                               visible="false" managed="false"/>
+            <Label fx:id="previewLabel" styleClass="micro" wrapText="true"/>
+        </HBox>
+
+        <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"
+               visible="false" managed="false"/>
+    </VBox>
+
+    <padding>
+        <Insets top="30" right="34" bottom="30" left="34"/>
+    </padding>
 </VBox>

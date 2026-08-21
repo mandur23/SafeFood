@@ -18,26 +18,26 @@
 
     <VBox spacing="4">
         <Label text="새로운 그룹 방이 생성되었습니다!" styleClass="page-title"/>
-        <Label text="아래 두 값을 일행에게 전달하세요. 둘 다 있어야 참여할 수 있습니다."
+        <Label text="아래 초대 코드 하나만 일행에게 전달하세요. 접속 주소는 코드 안에 들어 있습니다."
                styleClass="page-subtitle" wrapText="true"/>
         <Separator/>
     </VBox>
 
     <VBox styleClass="card" spacing="10">
-        <Label text="접속 주소" styleClass="field-label"/>
-        <HBox spacing="8">
-            <TextField fx:id="addressField" editable="false" styleClass="readonly" HBox.hgrow="ALWAYS"/>
-            <Button text="복사" onAction="#handleCopyAddress"/>
+        <Label text="초대 코드" styleClass="field-label"/>
+        <HBox spacing="8" alignment="CENTER">
+            <TextField fx:id="codeField" editable="false"
+                       styleClass="readonly, invite-code" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="copyButton" text="복사" onAction="#handleCopyCode"/>
         </HBox>
 
-        <Label text="초대 코드" styleClass="field-label"/>
-        <HBox spacing="8">
-            <TextField fx:id="codeField" editable="false" styleClass="readonly" HBox.hgrow="ALWAYS"/>
-            <Button text="복사" onAction="#handleCopyCode"/>
-        </HBox>
+        <Label fx:id="addressLabel" styleClass="sub" wrapText="true"/>
+
+        <Separator/>
 
         <Label text="같은 네트워크(같은 와이파이) 안에서만 접속됩니다. 학교·카페 와이파이는 기기 간 통신을 막는 경우가 많습니다."
                styleClass="sub" wrapText="true"/>
+        <Label fx:id="discoveryLabel" styleClass="sub" wrapText="true"/>
     </VBox>
 
     <HBox spacing="8" alignment="CENTER_RIGHT">

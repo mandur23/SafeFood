@@ -1,29 +1,72 @@
+/*
+  SafeFood — Organic 리디자인 테마
+  claude.ai/design 프로젝트 "Safefood UI mockups" / 디자인 시스템 organic-18042edb 를 JavaFX로 옮긴 것.
+
+  웹 토큰 → JavaFX 대응 규칙
+    --color-*      → .root 의 looked-up color (아래 토큰 블록)
+    color-mix()    → rgba() 리터럴 또는 derive()
+    border-radius  → -fx-background-radius / -fx-border-radius (버튼·입력·칩은 999 = pill)
+    box-shadow     → -fx-effect: dropshadow(...)
+    :focus-visible → :focused
+
+  제목 글꼴 주의 — 원본 디자인의 Caprasimo 는 한글 글리프가 없습니다.
+  화면 문구가 전부 한글이라 그대로 쓰면 어차피 폴백되므로, 제목은 본문과 같은
+  한글 글꼴을 굵게 쓰는 것으로 대체했습니다.
+*/
+
 .root {
 
- -primary: #C4551D;
- -primary-hover: #A84717;
+ /* ── 바탕과 잉크 ─────────────────────────────────────────── */
+ -bg: #F5EAD8;
+ -surface: #EBDDC5;
+ -ink: #201E1D;
+ -ink-muted: rgba(32, 30, 29, 0.55);
+ -ink-soft: rgba(32, 30, 29, 0.70);
+ -divider: rgba(32, 30, 29, 0.16);
 
- -info: #3B79A0;
- -selected-tag: #BACEE7;
- -disabled-gray: #787878;
- -panel-bg: #F5F6F8;
- -console-bg: #151723;
- -console-fg: #A8E05F;
+ /* ── 뉴트럴 램프 (100 → 900) ──────────────────────────────── */
+ -n100: #F9F4ED;
+ -n200: #EEE7DB;
+ -n300: #DCD3C4;
+ -n400: #C0B6A5;
+ -n500: #A19786;
+ -n600: #82796A;
+ -n700: #645C50;
+ -n800: #474238;
+ -n900: #2E2B25;
 
- -ink: #1F2328;
- -ink-muted: #6B7280;
- -line: #DCE0E5;
- -surface: #FFFFFF;
- -ok-green: #2E7D32;
- -danger-red: #C62828;
- -warn-amber: #B8860B;
+ /* ── 테라코타 (주 강조) ───────────────────────────────────── */
+ -accent: #C67139;
+ -accent-100: #FFF2EB;
+ -accent-200: #FFE1D0;
+ -accent-300: #FFC6A5;
+ -accent-400: #F6A06B;
+ -accent-500: #D67F48;
+ -accent-600: #B2622D;
+ -accent-700: #8C491A;
+ -accent-800: #643312;
 
- -fx-background-color: -panel-bg;
- -fx-font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
- -fx-font-size: 13px;
+ /* ── 세이지 (제2 강조) ────────────────────────────────────── */
+ -accent2: #7A8A5E;
+ -accent2-100: #F0FAE1;
+ -accent2-200: #E1EECC;
+ -accent2-300: #CCDBB2;
+ -accent2-400: #AEBF92;
+ -accent2-700: #56633F;
+ -accent2-800: #3D472B;
+
+ /* ── 상태색 (목업의 경고·차단 칩에서 가져옴) ─────────────── */
+ -warn-bg: #F6E8C4;
+ -warn-fg: #6E5410;
+ -danger-bg: #F4D9CD;
+ -danger-fg: #7C2D1C;
+
+ -fx-background-color: -bg;
+ -fx-font-family: "Figtree", "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+ -fx-font-size: 14px;
  -fx-text-fill: -ink;
 
- -fx-focus-color: -primary;
+ -fx-focus-color: -accent;
  -fx-faint-focus-color: transparent;
 }
 
@@ -31,17 +74,37 @@
  -fx-text-fill: -ink;
 }
 
+/* ══ 타이포 ══════════════════════════════════════════════════ */
+
 .page-title {
- -fx-font-size: 20px;
+ -fx-font-size: 27px;
+ -fx-font-weight: bold;
+ -fx-text-fill: -ink;
+}
+
+.display-title {
+ -fx-font-size: 32px;
  -fx-font-weight: bold;
 }
 
 .page-subtitle {
  -fx-text-fill: -ink-muted;
+ -fx-font-size: 13px;
 }
 
 .section-title {
- -fx-font-size: 15px;
+ -fx-font-size: 17px;
+ -fx-font-weight: bold;
+}
+
+.card-title {
+ -fx-font-size: 20px;
+ -fx-font-weight: bold;
+}
+
+.kicker {
+ -fx-font-size: 10px;
+ -fx-text-fill: -accent-700;
  -fx-font-weight: bold;
 }
 
@@ -50,219 +113,473 @@
  -fx-font-size: 12px;
 }
 
+.micro {
+ -fx-text-fill: -ink-muted;
+ -fx-font-size: 11px;
+}
+
+.field-label {
+ -fx-text-fill: -ink-soft;
+ -fx-font-size: 12px;
+}
+
 .accent-text {
- -fx-text-fill: -primary;
+ -fx-text-fill: -accent-700;
  -fx-font-weight: bold;
 }
 
+.hint-ok {
+ -fx-text-fill: -accent2-700;
+ -fx-font-size: 11px;
+}
+
+.hint-bad {
+ -fx-text-fill: -danger-fg;
+ -fx-font-size: 11px;
+}
+
+.error-text {
+ -fx-text-fill: -danger-fg;
+ -fx-font-size: 12px;
+}
+
+.strike {
+ -fx-strikethrough: true;
+ -fx-text-fill: -ink-muted;
+}
+
+.hyperlink {
+ -fx-text-fill: -accent-700;
+ -fx-border-color: transparent;
+ -fx-padding: 0 2 0 2;
+ -fx-cursor: hand;
+ -fx-font-size: 12px;
+}
+
+.hyperlink:hover {
+ -fx-underline: true;
+}
+
 .separator .line {
- -fx-border-color: -line;
+ -fx-border-color: -divider;
  -fx-border-width: 1 0 0 0;
 }
 
-.button {
- -fx-background-radius: 6;
- -fx-border-radius: 6;
- -fx-padding: 8 18 8 18;
- -fx-cursor: hand;
- -fx-font-size: 13px;
+/* 얇은 구분선을 Region 으로 쓸 때.
+   max 를 같이 묶지 않으면 HBox/VBox 가 남는 공간만큼 굵게 늘려 버립니다. */
+.rule {
+ -fx-background-color: -divider;
+ -fx-pref-height: 1;
+ -fx-min-height: 1;
+ -fx-max-height: 1;
 }
 
-.button {
- -fx-background-color: -surface;
+.rule-v {
+ -fx-background-color: -divider;
+ -fx-pref-width: 1;
+ -fx-min-width: 1;
+ -fx-max-width: 1;
+}
+
+/* ══ 버튼 — 전부 pill ═════════════════════════════════════════ */
+
+.button, .toggle-button {
+ -fx-background-radius: 999;
+ -fx-border-radius: 999;
+ -fx-padding: 9 18 9 18;
+ -fx-cursor: hand;
+ -fx-font-size: 14px;
+ -fx-background-color: transparent;
  -fx-text-fill: -ink;
- -fx-border-color: -line;
+ -fx-border-color: -divider;
  -fx-border-width: 1;
 }
 
-.button:hover {
- -fx-background-color: #EFF1F4;
+.button:hover, .toggle-button:hover {
+ -fx-background-color: rgba(32, 30, 29, 0.07);
+}
+
+.button:pressed {
+ -fx-background-color: rgba(32, 30, 29, 0.14);
 }
 
 .button.primary {
- -fx-background-color: -primary;
- -fx-text-fill: white;
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
  -fx-border-color: transparent;
  -fx-font-weight: bold;
 }
 
 .button.primary:hover {
- -fx-background-color: -primary-hover;
+ -fx-background-color: -accent-600;
+}
+
+.button.primary:pressed {
+ -fx-background-color: -accent-700;
+}
+
+/* 세이지 계열 주 버튼 — 게스트 입장처럼 두 번째 길에 씁니다 */
+.button.primary-2 {
+ -fx-background-color: -accent2;
+ -fx-text-fill: -bg;
+ -fx-border-color: transparent;
+ -fx-font-weight: bold;
+}
+
+.button.primary-2:hover {
+ -fx-background-color: -accent2-700;
 }
 
 .button.outline {
- -fx-background-color: -surface;
- -fx-text-fill: -primary;
- -fx-border-color: -primary;
+ -fx-background-color: transparent;
+ -fx-text-fill: -accent-700;
+ -fx-border-color: -accent;
  -fx-border-width: 1;
 }
 
 .button.outline:hover {
- -fx-background-color: derive(-primary, 92%);
+ -fx-background-color: -accent-100;
 }
 
-.button:disabled {
- -fx-background-color: #E6E8EB;
- -fx-text-fill: -disabled-gray;
+/* 텍스트만 있는 보조 동작 */
+.button.ghost {
+ -fx-background-color: transparent;
  -fx-border-color: transparent;
- -fx-opacity: 1;
+ -fx-text-fill: -accent-700;
+ -fx-padding: 6 10 6 10;
+}
+
+.button.ghost:hover {
+ -fx-background-color: -accent-100;
+}
+
+.button.ghost-quiet {
+ -fx-background-color: transparent;
+ -fx-border-color: transparent;
+ -fx-text-fill: -ink-soft;
+ -fx-padding: 4 10 4 10;
+ -fx-font-size: 12px;
+}
+
+.button.ghost-quiet:hover {
+ -fx-background-color: rgba(32, 30, 29, 0.07);
+ -fx-text-fill: -ink;
+}
+
+.button.danger {
+ -fx-background-color: transparent;
+ -fx-border-color: transparent;
+ -fx-text-fill: -danger-fg;
+}
+
+.button.danger:hover {
+ -fx-background-color: -danger-bg;
+}
+
+/* 원형 아이콘 버튼 */
+.button.icon {
+ -fx-padding: 0;
+ -fx-min-width: 36;
+ -fx-min-height: 36;
+ -fx-pref-width: 36;
+ -fx-pref-height: 36;
+ -fx-background-radius: 999;
+ -fx-border-radius: 999;
+ -fx-font-size: 14px;
+}
+
+.button.icon-send {
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+ -fx-border-color: transparent;
+ -fx-min-width: 40;
+ -fx-min-height: 40;
+ -fx-pref-width: 40;
+ -fx-pref-height: 40;
+ -fx-padding: 0;
+ -fx-background-radius: 999;
+ -fx-font-size: 15px;
+}
+
+.button.icon-send:hover {
+ -fx-background-color: -accent-600;
+}
+
+.button:disabled, .toggle-button:disabled {
+ -fx-opacity: 0.45;
  -fx-cursor: default;
 }
 
-.button.icon {
- -fx-padding: 4 8 4 8;
- -fx-background-color: transparent;
- -fx-border-color: transparent;
+.button:focused, .toggle-button:focused {
+ -fx-border-color: -accent;
+ -fx-border-width: 2;
 }
 
-.button.icon:hover {
- -fx-background-color: #E6E8EB;
-}
+/* ══ 칩 / 태그 ════════════════════════════════════════════════ */
 
-.tab-toggle {
- -fx-background-color: -surface;
- -fx-text-fill: -disabled-gray;
- -fx-border-color: -line;
- -fx-border-width: 1;
- -fx-background-radius: 0;
- -fx-border-radius: 0;
- -fx-padding: 9 24 9 24;
- -fx-cursor: hand;
-}
-
-.tab-toggle:selected {
- -fx-background-color: -primary;
- -fx-text-fill: white;
- -fx-border-color: -primary;
- -fx-font-weight: bold;
-}
-
-.tab-toggle:disabled {
- -fx-background-color: #E6E8EB;
- -fx-text-fill: -disabled-gray;
- -fx-opacity: 1;
-}
-
-.tab-toggle.first {
- -fx-background-radius: 6 0 0 6;
- -fx-border-radius: 6 0 0 6;
-}
-
-.tab-toggle.last {
- -fx-background-radius: 0 6 6 0;
- -fx-border-radius: 0 6 6 0;
-}
-
-.nav-button {
- -fx-background-color: transparent;
- -fx-text-fill: -ink;
- -fx-border-color: transparent;
- -fx-padding: 8 16 8 16;
- -fx-cursor: hand;
-}
-
-.nav-button:selected,
-.nav-button.active {
- -fx-background-color: -primary;
- -fx-text-fill: white;
- -fx-background-radius: 6;
- -fx-font-weight: bold;
-}
-
+/* 선택 가능한 칩 (ToggleButton) */
 .chip {
- -fx-background-color: -surface;
- -fx-text-fill: -ink;
- -fx-border-color: -line;
+ -fx-background-color: -n100;
+ -fx-text-fill: -n800;
+ -fx-border-color: transparent;
  -fx-border-width: 1;
- -fx-background-radius: 16;
- -fx-border-radius: 16;
- -fx-padding: 6 14 6 14;
+ -fx-background-radius: 999;
+ -fx-border-radius: 999;
+ -fx-padding: 7 15 7 15;
+ -fx-font-size: 13px;
  -fx-cursor: hand;
 }
 
 .chip:hover {
- -fx-border-color: -primary;
+ -fx-border-color: -accent-300;
 }
 
 .chip:selected {
- -fx-background-color: -selected-tag;
- -fx-border-color: -selected-tag;
- -fx-text-fill: -ink;
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+ -fx-border-color: transparent;
  -fx-font-weight: bold;
+}
+
+.chip:selected:hover {
+ -fx-background-color: -accent-600;
+}
+
+/* 필터 줄에 쓰는 작은 칩 */
+.chip.compact {
+ -fx-padding: 5 13 5 13;
+ -fx-font-size: 12px;
+}
+
+/* 읽기 전용 라벨 태그 (Label) */
+.tag {
+ -fx-padding: 4 11 4 11;
+ -fx-background-radius: 999;
+ -fx-font-size: 11px;
+ -fx-background-color: -n100;
+ -fx-text-fill: -n800;
+}
+
+.tag.accent { -fx-background-color: -accent-100; -fx-text-fill: -accent-800; }
+.tag.accent2 { -fx-background-color: -accent2-100; -fx-text-fill: -accent2-800; }
+.tag.neutral { -fx-background-color: -n100; -fx-text-fill: -n800; }
+.tag.solid { -fx-background-color: -accent; -fx-text-fill: -bg; -fx-font-weight: bold; }
+.tag.warn { -fx-background-color: -warn-bg; -fx-text-fill: -warn-fg; }
+.tag.danger { -fx-background-color: -danger-bg; -fx-text-fill: -danger-fg; }
+
+.tag.outline {
+ -fx-background-color: transparent;
+ -fx-border-color: -accent;
+ -fx-border-width: 1;
+ -fx-border-radius: 999;
+ -fx-text-fill: -accent-700;
 }
 
 .chip-area {
  -fx-hgap: 8;
  -fx-vgap: 8;
- -fx-padding: 4;
+ -fx-padding: 2;
 }
 
-.field-label {
- -fx-text-fill: -ink-muted;
- -fx-font-size: 12px;
+/* ══ 세그먼티드 컨트롤 ════════════════════════════════════════ */
+
+.seg-opt {
+ -fx-background-color: transparent;
+ -fx-text-fill: -ink;
+ -fx-border-color: -divider;
+ -fx-border-width: 1 0 1 1;
+ -fx-background-radius: 0;
+ -fx-border-radius: 0;
+ -fx-padding: 7 14 7 14;
+ -fx-font-size: 13px;
+ -fx-cursor: hand;
 }
+
+.seg-opt:hover {
+ -fx-background-color: rgba(32, 30, 29, 0.07);
+}
+
+.seg-opt:selected {
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+ -fx-font-weight: bold;
+}
+
+.seg-opt.first {
+ -fx-background-radius: 999 0 0 999;
+ -fx-border-radius: 999 0 0 999;
+}
+
+.seg-opt.last {
+ -fx-background-radius: 0 999 999 0;
+ -fx-border-radius: 0 999 999 0;
+ -fx-border-width: 1;
+}
+
+/* 예전 이름 — 남아 있는 화면이 있어도 pill 로 보이게 유지 */
+.tab-toggle {
+ -fx-background-color: transparent;
+ -fx-text-fill: -ink-soft;
+ -fx-border-color: -divider;
+ -fx-border-width: 1;
+ -fx-padding: 8 20 8 20;
+ -fx-cursor: hand;
+}
+
+.tab-toggle:selected {
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+ -fx-border-color: -accent;
+ -fx-font-weight: bold;
+}
+
+.tab-toggle.first { -fx-background-radius: 999 0 0 999; -fx-border-radius: 999 0 0 999; }
+.tab-toggle.last { -fx-background-radius: 0 999 999 0; -fx-border-radius: 0 999 999 0; }
+
+/* ══ 입력 ═════════════════════════════════════════════════════ */
 
 .text-field,
 .password-field,
-.text-area,
 .combo-box,
 .choice-box {
  -fx-background-color: -surface;
- -fx-border-color: -line;
+ -fx-border-color: -divider;
  -fx-border-width: 1;
- -fx-background-radius: 6;
- -fx-border-radius: 6;
- -fx-padding: 8 10 8 10;
+ -fx-background-radius: 999;
+ -fx-border-radius: 999;
+ -fx-padding: 8 14 8 14;
+ -fx-font-size: 14px;
 }
 
-.text-field:focused,
-.password-field:focused,
-.text-area:focused {
- -fx-border-color: -primary;
-}
-
-.text-field:disabled,
-.password-field:disabled {
- -fx-background-color: #EDEFF2;
- -fx-text-fill: -disabled-gray;
- -fx-opacity: 1;
-}
-
-.text-field .prompt-text,
-.password-field .prompt-text {
- -fx-fill: -ink-muted;
-}
-
-.readonly {
- -fx-background-color: -panel-bg;
- -fx-text-fill: -ink;
+.text-area {
+ -fx-background-color: -surface;
+ -fx-border-color: -divider;
+ -fx-border-width: 1;
+ -fx-background-radius: 20;
+ -fx-border-radius: 20;
+ -fx-padding: 4;
+ -fx-font-size: 14px;
 }
 
 .text-area .content {
  -fx-background-color: -surface;
+ -fx-background-radius: 18;
 }
 
-.error-text {
- -fx-text-fill: -danger-red;
+.text-field:hover,
+.password-field:hover {
+ -fx-border-color: rgba(32, 30, 29, 0.45);
+}
+
+.text-field:focused,
+.password-field:focused,
+.text-area:focused,
+.combo-box:focused {
+ -fx-border-color: -accent;
+ -fx-border-width: 2;
+}
+
+.text-field.ok, .password-field.ok {
+ -fx-border-color: -accent2;
+ -fx-border-width: 2;
+}
+
+.text-field.error, .password-field.error {
+ -fx-border-color: -danger-fg;
+ -fx-border-width: 2;
+}
+
+.text-field:disabled,
+.password-field:disabled {
+ -fx-opacity: 0.55;
+}
+
+.text-field .prompt-text,
+.password-field .prompt-text {
+ -fx-fill: -n600;
+}
+
+.combo-box .list-cell {
+ -fx-background-color: transparent;
+ -fx-text-fill: -ink;
+ -fx-padding: 2 4 2 4;
+ -fx-border-width: 0;
+}
+
+.combo-box-popup .list-view {
+ -fx-background-color: -bg;
+ -fx-background-radius: 16;
+ -fx-border-radius: 16;
+ -fx-border-color: -divider;
+ -fx-effect: dropshadow(gaussian, rgba(46, 43, 37, 0.22), 24, 0, 0, 10);
+}
+
+.combo-box-popup .list-view .list-cell {
+ -fx-padding: 8 14 8 14;
+ -fx-background-color: transparent;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover {
+ -fx-background-color: -accent-100;
+}
+
+.combo-box-popup .list-view .list-cell:filled:selected {
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+}
+
+.readonly {
+ -fx-background-color: -bg;
+ -fx-text-fill: -ink;
+}
+
+/* 초대 코드 — 눈으로 읽고 옮겨 적는 값이라 크게, 고정폭으로 (0과 O가 구분되게) */
+.invite-code {
+ -fx-font-family: "Consolas", "D2Coding", "Courier New", monospace;
+ -fx-font-size: 19px;
+ -fx-font-weight: bold;
+ -fx-alignment: center;
+ -fx-padding: 11 14 11 14;
+}
+
+.code-inline {
+ -fx-font-family: "Consolas", "D2Coding", "Courier New", monospace;
  -fx-font-size: 12px;
+ -fx-background-color: -n100;
+ -fx-text-fill: -n800;
+ -fx-background-radius: 999;
+ -fx-padding: 5 12 5 12;
 }
 
-.text-field.error,
-.password-field.error {
- -fx-border-color: -danger-red;
+/* 비밀번호 강도 막대 */
+.strength-bar {
+ -fx-background-color: -n200;
+ -fx-background-radius: 999;
+ -fx-pref-height: 4;
+ -fx-min-height: 4;
 }
 
+.strength-bar.on {
+ -fx-background-color: -accent2;
+}
+
+/* ══ 슬라이더 ═════════════════════════════════════════════════ */
+
+/* 트랙 반경은 pill(999)로 두면 안 됩니다 — SliderSkin 이 트랙 길이에
+   반경을 양쪽으로 더해 늘리기 때문에, 트랙이 창 전체로 삐져나갑니다.
+   높이가 5px이므로 3이면 이미 완전히 둥급니다. */
 .slider .track {
- -fx-background-color: #E1E5EA;
+ -fx-background-color: -n200;
  -fx-background-radius: 3;
- -fx-pref-height: 6;
+ -fx-pref-height: 5;
 }
 
 .slider .thumb {
- -fx-background-color: -primary;
- -fx-background-radius: 10;
+ -fx-background-color: -accent;
+ -fx-background-radius: 999;
  -fx-pref-width: 18;
  -fx-pref-height: 18;
+ -fx-effect: dropshadow(gaussian, rgba(46, 43, 37, 0.14), 3, 0, 0, 1);
 }
 
 .slider .axis {
@@ -270,231 +587,521 @@
  -fx-tick-label-font-size: 11px;
 }
 
+/* ══ 카드 · 면 ════════════════════════════════════════════════ */
+
 .card {
  -fx-background-color: -surface;
- -fx-background-radius: 10;
- -fx-border-color: -line;
- -fx-border-radius: 10;
- -fx-border-width: 1;
- -fx-padding: 16;
+ -fx-background-radius: 32;
+ -fx-border-color: transparent;
+ -fx-border-radius: 32;
+ -fx-padding: 20 22 20 22;
+}
+
+/* 배경 위에 뜨는 카드 */
+.card.elev {
+ -fx-effect: dropshadow(gaussian, rgba(46, 43, 37, 0.14), 4, 0, 0, 1);
+}
+
+.card.soft { -fx-background-color: -n100; }
+.card.accent { -fx-background-color: -accent-100; }
+.card.accent2 { -fx-background-color: -accent2-100; }
+.card.plain { -fx-background-color: -bg; }
+
+.card.outlined {
+ -fx-background-color: -bg;
+ -fx-border-color: -accent;
+ -fx-border-width: 2;
 }
 
 .card .menu-name {
- -fx-font-size: 17px;
+ -fx-font-size: 20px;
  -fx-font-weight: bold;
 }
 
 .card .restaurant-name {
  -fx-text-fill: -ink-muted;
+ -fx-font-size: 13px;
 }
 
 .card.blocked {
- -fx-background-color: #F2F3F5;
- -fx-border-color: #D5D8DC;
+ -fx-background-color: -n200;
 }
 
 .card.blocked .menu-name {
- -fx-text-fill: -disabled-gray;
+ -fx-text-fill: -ink-muted;
+}
+
+/* 차단 축약 행 — 카드가 아니라 한 줄 pill */
+.blocked-row {
+ -fx-background-color: -n200;
+ -fx-background-radius: 999;
+ -fx-padding: 12 22 12 22;
 }
 
 .reason-panel {
- -fx-background-color: -panel-bg;
- -fx-background-radius: 6;
- -fx-padding: 10 12 10 12;
+ -fx-background-color: -accent2-100;
+ -fx-background-radius: 20;
+ -fx-padding: 14 18 14 18;
 }
 
 .reason-panel .label {
  -fx-text-fill: -ink;
 }
 
-.badge {
- -fx-padding: 3 10 3 10;
- -fx-background-radius: 12;
- -fx-font-size: 12px;
- -fx-font-weight: bold;
- -fx-text-fill: white;
+.panel {
+ -fx-background-color: -n100;
+ -fx-background-radius: 24;
+ -fx-padding: 16 18 16 18;
 }
 
-.badge.rank-1 { -fx-background-color: -primary; }
-.badge.rank-2 { -fx-background-color: -info; }
-.badge.blocked { -fx-background-color: -disabled-gray; }
+.screen {
+ -fx-padding: 24;
+ -fx-spacing: 16;
+ -fx-background-color: -bg;
+}
+
+/* 다이얼로그 루트 */
+.sheet {
+ -fx-background-color: -bg;
+ -fx-padding: 30 34 30 34;
+ -fx-spacing: 16;
+}
+
+/* ══ 원형 마크 · 아바타 · 순위 배지 ═══════════════════════════ */
+
+.brand-mark {
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+ -fx-background-radius: 999;
+ -fx-min-width: 34; -fx-min-height: 34;
+ -fx-pref-width: 34; -fx-pref-height: 34;
+ -fx-alignment: center;
+ -fx-font-size: 16px;
+ -fx-font-weight: bold;
+}
+
+.brand-mark.large {
+ -fx-min-width: 56; -fx-min-height: 56;
+ -fx-pref-width: 56; -fx-pref-height: 56;
+ -fx-font-size: 26px;
+}
+
+.rank-circle {
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+ -fx-background-radius: 999;
+ -fx-min-width: 52; -fx-min-height: 52;
+ -fx-pref-width: 52; -fx-pref-height: 52;
+ -fx-alignment: center;
+ -fx-font-size: 21px;
+ -fx-font-weight: bold;
+}
+
+.rank-circle.rank-2 { -fx-background-color: -accent2; }
+.rank-circle.blocked { -fx-background-color: -n400; }
+
+.avatar {
+ -fx-background-color: -n300;
+ -fx-text-fill: -n900;
+ -fx-background-radius: 999;
+ -fx-min-width: 40; -fx-min-height: 40;
+ -fx-pref-width: 40; -fx-pref-height: 40;
+ -fx-alignment: center;
+ -fx-font-size: 14px;
+ -fx-font-weight: bold;
+}
+
+.avatar.small {
+ -fx-min-width: 30; -fx-min-height: 30;
+ -fx-pref-width: 30; -fx-pref-height: 30;
+ -fx-font-size: 12px;
+}
+
+.avatar.owner { -fx-background-color: -accent; -fx-text-fill: -bg; }
+.avatar.ready { -fx-background-color: -accent2-300; }
+.avatar.waiting { -fx-background-color: -n300; -fx-opacity: 0.7; }
+
+/* ══ 온보딩 스텝 ══════════════════════════════════════════════ */
+
+.step-dot {
+ -fx-background-color: -n200;
+ -fx-text-fill: -ink-soft;
+ -fx-background-radius: 999;
+ -fx-min-width: 26; -fx-min-height: 26;
+ -fx-pref-width: 26; -fx-pref-height: 26;
+ -fx-alignment: center;
+ -fx-font-size: 12px;
+}
+
+.step-dot.done { -fx-background-color: -accent2; -fx-text-fill: -bg; }
+.step-dot.now { -fx-background-color: -accent; -fx-text-fill: -bg; -fx-font-weight: bold; }
+
+.step-line {
+ -fx-background-color: -divider;
+ -fx-pref-width: 28;
+ -fx-min-width: 28;
+ -fx-max-width: 28;
+ -fx-pref-height: 2;
+ -fx-min-height: 2;
+ -fx-max-height: 2;   /* max 를 안 묶으면 HBox 가 줄 높이만큼 굵게 늘립니다 */
+}
+
+.step-line.done { -fx-background-color: -accent; }
+
+/* ══ 배지 · 상태 ══════════════════════════════════════════════ */
+
+.badge {
+ -fx-padding: 4 11 4 11;
+ -fx-background-radius: 999;
+ -fx-font-size: 11px;
+ -fx-font-weight: bold;
+ -fx-text-fill: -bg;
+}
+
+.badge.rank-1 { -fx-background-color: -accent; }
+.badge.rank-2 { -fx-background-color: -accent2; }
+.badge.blocked { -fx-background-color: -n500; }
 
 .safety {
- -fx-padding: 3 10 3 10;
- -fx-background-radius: 4;
- -fx-border-radius: 4;
- -fx-border-width: 1;
- -fx-font-size: 12px;
+ -fx-padding: 4 11 4 11;
+ -fx-background-radius: 999;
+ -fx-font-size: 11px;
  -fx-font-weight: bold;
- -fx-text-fill: -ink;
- -fx-background-color: -surface;
 }
 
-.safety.safe { -fx-border-color: -ok-green; }
-.safety.possible { -fx-border-color: -warn-amber; }
-.safety.contains { -fx-border-color: -danger-red; }
+.safety.safe { -fx-background-color: -accent2-100; -fx-text-fill: -accent2-800; }
+.safety.possible { -fx-background-color: -warn-bg; -fx-text-fill: -warn-fg; }
+.safety.contains { -fx-background-color: -danger-bg; -fx-text-fill: -danger-fg; }
 
-.status { -fx-font-size: 12px; -fx-font-weight: bold; }
-.status.recommended { -fx-text-fill: -disabled-gray; }
-.status.eaten { -fx-text-fill: -ok-green; }
-.status.viewed { -fx-text-fill: -disabled-gray; }
-.status.blocked { -fx-text-fill: -danger-red; }
+.status {
+ -fx-font-size: 11px;
+ -fx-font-weight: bold;
+ -fx-padding: 4 11 4 11;
+ -fx-background-radius: 999;
+ -fx-background-color: -n100;
+ -fx-text-fill: -n800;
+}
+
+.status.recommended { -fx-background-color: -n100; -fx-text-fill: -n800; }
+.status.eaten { -fx-background-color: -accent2-100; -fx-text-fill: -accent2-800; }
+.status.viewed { -fx-background-color: -n100; -fx-text-fill: -n700; }
+.status.blocked { -fx-background-color: -danger-bg; -fx-text-fill: -danger-fg; }
 
 .member-state { -fx-font-size: 12px; -fx-font-weight: bold; }
-.member-state.waiting { -fx-text-fill: -disabled-gray; }
-.member-state.ready { -fx-text-fill: -ok-green; }
+.member-state.waiting { -fx-text-fill: -ink-muted; }
+.member-state.ready { -fx-text-fill: -accent2-700; }
 
-.list-view {
- -fx-background-color: -surface;
- -fx-border-color: -line;
- -fx-border-radius: 8;
- -fx-background-radius: 8;
+.timeline-date {
+ -fx-font-size: 11px;
+ -fx-text-fill: -ink-muted;
 }
 
-.list-cell {
- -fx-background-color: -surface;
- -fx-padding: 10 12 10 12;
- -fx-border-color: transparent transparent -line transparent;
+/* ══ 채팅 말풍선 ══════════════════════════════════════════════ */
+
+.bubble {
+ -fx-padding: 9 14 9 14;
+ -fx-font-size: 14px;
+ -fx-background-radius: 18 18 18 6;
+ -fx-background-color: -n100;
+ -fx-text-fill: -ink;
+}
+
+.bubble.mine {
+ -fx-background-radius: 18 18 6 18;
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+}
+
+.bubble-name {
+ -fx-font-size: 11px;
+ -fx-text-fill: -ink-muted;
+ -fx-padding: 0 0 3 6;
+}
+
+/* 시스템 알림 — 가운데 정렬 pill */
+.system-pill {
+ -fx-background-color: -n100;
+ -fx-text-fill: -n800;
+ -fx-background-radius: 999;
+ -fx-padding: 5 14 5 14;
+ -fx-font-size: 11px;
+}
+
+.system-pill.good {
+ -fx-background-color: -accent2-100;
+ -fx-text-fill: -accent2-800;
+}
+
+.system-pill.bad {
+ -fx-background-color: -danger-bg;
+ -fx-text-fill: -danger-fg;
+}
+
+.chat-scroll {
+ -fx-background-color: -bg;
+}
+
+.chat-scroll > .viewport {
+ -fx-background-color: -bg;
+}
+
+/* ══ 투표 ═════════════════════════════════════════════════════ */
+
+.progress-bar {
+ -fx-pref-height: 10;
+}
+
+.progress-bar > .track {
+ -fx-background-color: -n200;
+ -fx-background-radius: 999;
+}
+
+.progress-bar > .bar {
+ -fx-background-color: -accent;
+ -fx-background-radius: 999;
+ -fx-padding: 0;
+}
+
+.progress-bar.leading > .bar { -fx-background-color: -accent; }
+.progress-bar.trailing > .bar { -fx-background-color: -accent2-400; }
+
+.vote-count {
+ -fx-font-weight: bold;
+ -fx-text-fill: -accent-700;
+ -fx-font-size: 15px;
+}
+
+.vote-count.trailing { -fx-text-fill: -accent2-700; }
+.vote-count.zero { -fx-text-fill: -ink-muted; }
+
+.progress-indicator {
+ -fx-progress-color: -accent;
+}
+
+/* ══ 지도 ═════════════════════════════════════════════════════ */
+
+.hero-map {
+ -fx-background-color: -accent2-200;
+}
+
+.map-pin {
+ -fx-background-color: -accent;
+ -fx-text-fill: -bg;
+ -fx-background-radius: 999;
+ -fx-min-width: 44; -fx-min-height: 44;
+ -fx-pref-width: 44; -fx-pref-height: 44;
+ -fx-alignment: center;
+ -fx-font-size: 18px;
+ -fx-effect: dropshadow(gaussian, rgba(46, 43, 37, 0.16), 10, 0, 0, 3);
+}
+
+/* ══ 내비게이션 ═══════════════════════════════════════════════ */
+
+.toolbar {
+ -fx-background-color: -bg;
+ -fx-padding: 14 28 14 28;
+ -fx-border-color: transparent;
+}
+
+.toolbar.divided {
+ -fx-border-color: transparent transparent -divider transparent;
  -fx-border-width: 0 0 1 0;
 }
 
-.list-cell:filled:hover {
- -fx-background-color: #F7F8FA;
+.nav-button {
+ -fx-background-color: transparent;
+ -fx-text-fill: -ink;
+ -fx-border-color: transparent;
+ -fx-padding: 7 14 7 14;
+ -fx-cursor: hand;
+ -fx-font-size: 14px;
 }
 
-.list-cell:filled:selected {
- -fx-background-color: derive(-selected-tag, 40%);
- -fx-text-fill: -ink;
+.nav-button:hover {
+ -fx-text-fill: -accent-700;
+ -fx-background-color: transparent;
 }
+
+/* 내비게이션은 테두리가 없는 글자 링크라, 포커스 링까지 두르면 눌린 것처럼 보입니다 */
+.nav-button:focused {
+ -fx-border-color: transparent;
+ -fx-border-width: 1;
+}
+
+.nav-button:selected,
+.nav-button.active {
+ -fx-background-color: transparent;
+ -fx-text-fill: -accent;
+ -fx-font-weight: bold;
+}
+
+/* ══ 리스트 · 테이블 ══════════════════════════════════════════ */
+
+.list-view {
+ -fx-background-color: transparent;
+ -fx-border-color: transparent;
+ -fx-background-radius: 24;
+}
+
+.list-cell {
+ -fx-background-color: transparent;
+ -fx-padding: 4 0 4 0;
+ -fx-border-color: transparent;
+}
+
+.list-cell:filled:hover { -fx-background-color: transparent; }
+.list-cell:filled:selected { -fx-background-color: transparent; -fx-text-fill: -ink; }
 
 .list-view .placeholder .label {
  -fx-text-fill: -ink-muted;
 }
 
 .table-view {
- -fx-background-color: -surface;
- -fx-border-color: -line;
- -fx-border-radius: 8;
- -fx-background-radius: 8;
+ -fx-background-color: -n100;
+ -fx-border-color: transparent;
+ -fx-background-radius: 24;
 }
 
 .table-view .column-header,
 .table-view .column-header-background .filler {
- -fx-background-color: -panel-bg;
- -fx-border-color: transparent transparent -line transparent;
+ -fx-background-color: transparent;
+ -fx-border-color: transparent transparent -divider transparent;
 }
 
 .table-view .column-header .label {
  -fx-text-fill: -ink-muted;
- -fx-font-size: 12px;
+ -fx-font-size: 11px;
  -fx-font-weight: bold;
+}
+
+.table-row-cell {
+ -fx-background-color: transparent;
+ -fx-border-color: transparent;
 }
 
 .table-row-cell:filled:selected {
- -fx-background-color: derive(-selected-tag, 40%);
+ -fx-background-color: -accent-100;
  -fx-text-fill: -ink;
 }
 
-.progress-bar {
- -fx-pref-height: 14;
-}
-
-.progress-bar > .track {
- -fx-background-color: #E1E5EA;
- -fx-background-radius: 7;
-}
-
-.progress-bar > .bar {
- -fx-background-color: -primary;
- -fx-background-radius: 7;
- -fx-padding: 0;
-}
-
-.progress-bar.leading > .bar {
- -fx-background-color: -primary;
-}
-
-.progress-bar.trailing > .bar {
- -fx-background-color: -info;
-}
-
-.vote-count {
- -fx-font-weight: bold;
- -fx-text-fill: -primary;
-}
-
-.progress-indicator {
- -fx-progress-color: -primary;
-}
+/* ══ 소켓 로그 (대기실에서 접어 두는 개발용 콘솔) ════════════ */
 
 .console {
- -fx-background-color: -console-bg;
- -fx-background-radius: 8;
- -fx-border-radius: 8;
+ -fx-background-color: -n900;
+ -fx-background-radius: 20;
+ -fx-border-radius: 20;
  -fx-font-family: "Consolas", "D2Coding", "Malgun Gothic", monospace;
- -fx-font-size: 12px;
+ -fx-font-size: 11px;
 }
 
 .console .content,
 .console .viewport {
- -fx-background-color: -console-bg;
+ -fx-background-color: -n900;
 }
 
-.console .text {
- -fx-fill: -console-fg;
-}
+.console .text { -fx-fill: -accent2-300; }
 
 .console .scroll-bar:vertical .thumb {
- -fx-background-color: #3A3F52;
+ -fx-background-color: -n700;
 }
 
-.log-line { -fx-font-family: "Consolas", "D2Coding", monospace; -fx-font-size: 12px; }
-.log-joined { -fx-text-fill: -console-fg; }
-.log-chat { -fx-text-fill: #E8E8E8; }
-.log-error { -fx-text-fill: #FF7B72; }
+.log-line { -fx-font-family: "Consolas", "D2Coding", monospace; -fx-font-size: 11px; }
+.log-joined { -fx-text-fill: -accent2-300; }
+.log-chat { -fx-text-fill: -n200; }
+.log-error { -fx-text-fill: #FF9E8F; }
 
-.panel {
- -fx-background-color: -panel-bg;
- -fx-background-radius: 8;
- -fx-padding: 14;
+/* ══ 접히는 패널 (대기실의 소켓 로그) ════════════════════════ */
+
+.titled-pane {
+ -fx-text-fill: -ink-soft;
 }
 
-.web-view {
- -fx-border-color: -line;
- -fx-border-radius: 8;
+.titled-pane > .title {
+ -fx-background-color: -n200;
+ -fx-background-radius: 999;
+ -fx-padding: 6 14 6 14;
+ -fx-font-size: 12px;
 }
+
+.titled-pane > .title:hover {
+ -fx-background-color: -n300;
+}
+
+.titled-pane > .title > .arrow-button .arrow {
+ -fx-background-color: -ink-soft;
+}
+
+.titled-pane > *.content {
+ -fx-background-color: transparent;
+ -fx-border-color: transparent;
+ -fx-padding: 8 0 0 0;
+}
+
+/* ══ 토스트 알림 ══════════════════════════════════════════════
+   모달 확인창을 대신합니다. 화면 아래 가운데에서 떠올랐다 사라지고,
+   누르면 즉시 치워집니다. 층(.toast-layer)은 클릭을 가로채지 않습니다. */
+
+.toast-layer {
+ -fx-padding: 0 0 28 0;
+}
+
+.toast {
+ -fx-background-color: -n900;
+ -fx-text-fill: -bg;
+ -fx-background-radius: 24;   /* 한 줄이면 pill, 여러 줄이면 둥근 카드 */
+ -fx-padding: 13 24 13 24;
+ -fx-font-size: 13px;
+ -fx-cursor: hand;
+ -fx-effect: dropshadow(gaussian, rgba(46, 43, 37, 0.28), 24, 0, 0, 8);
+}
+
+.toast.good {
+ -fx-background-color: -accent2-800;
+ -fx-text-fill: -accent2-100;
+}
+
+.toast.warn {
+ -fx-background-color: -warn-bg;
+ -fx-text-fill: -warn-fg;
+}
+
+.toast.error {
+ -fx-background-color: -danger-bg;
+ -fx-text-fill: -danger-fg;
+}
+
+/* ══ 알림창 ═══════════════════════════════════════════════════ */
 
 .dialog-pane {
- -fx-background-color: -surface;
+ -fx-background-color: -bg;
 }
 
 .dialog-pane .header-panel {
- -fx-background-color: -panel-bg;
+ -fx-background-color: -surface;
+}
+
+.dialog-pane .header-panel .label {
+ -fx-font-size: 16px;
+ -fx-font-weight: bold;
+ -fx-text-fill: -ink;
 }
 
 .dialog-pane .content.label {
- -fx-font-size: 13px;
+ -fx-font-size: 14px;
  -fx-text-fill: -ink;
 }
 
 .dialog-pane .button-bar .button {
- -fx-background-radius: 6;
+ -fx-background-radius: 999;
+ -fx-border-radius: 999;
 }
 
-.screen {
- -fx-padding: 24;
- -fx-spacing: 16;
-}
-
-.toolbar {
- -fx-background-color: -surface;
- -fx-padding: 12 24 12 24;
- -fx-border-color: transparent transparent -line transparent;
- -fx-border-width: 0 0 1 0;
-}
+/* ══ 스크롤 ═══════════════════════════════════════════════════ */
 
 .scroll-pane {
  -fx-background-color: transparent;
+ -fx-background-insets: 0;
+ -fx-padding: 0;
 }
 
 .scroll-pane > .viewport {
@@ -507,16 +1114,20 @@
 }
 
 .scroll-bar .thumb {
- -fx-background-color: #C7CDD4;
- -fx-background-radius: 4;
+ -fx-background-color: -n400;
+ -fx-background-radius: 999;
 }
 
 .scroll-bar .thumb:hover {
- -fx-background-color: #AEB6BF;
+ -fx-background-color: -n500;
 }
 
 .scroll-bar .increment-button,
 .scroll-bar .decrement-button {
  -fx-background-color: transparent;
  -fx-padding: 0;
+}
+
+.web-view {
+ -fx-border-color: transparent;
 }

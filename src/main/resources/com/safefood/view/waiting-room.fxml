@@ -1,71 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  1b 그룹 대기실 — 소켓 로그를 말풍선·시스템 알림으로, 투표는 우측 패널로.
+
+  예전에는 참여자 표 + 검은 콘솔 + 후보 목록이 나란히 있었습니다. 지금은 왼쪽이 대화 흐름
+  (참여·준비·병합·확정이 전부 이 흐름 안에서 알려집니다), 오른쪽이 사람과 투표입니다.
+  프로토콜 원문은 맨 아래 '소켓 로그'를 펴면 그대로 볼 수 있습니다.
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.safefood.view.controller.WaitingRoomController"
-            fitToWidth="true" fitToHeight="true">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.safefood.view.controller.WaitingRoomController">
 
-    <VBox styleClass="screen" spacing="16">
-        <padding>
-            <Insets top="24" right="24" bottom="24" left="24"/>
-        </padding>
+    <!-- ── 머리 ─────────────────────────────────────────────── -->
+    <top>
+        <HBox spacing="14" alignment="CENTER_LEFT" styleClass="toolbar, divided">
+            <Label text="그룹 대기실" styleClass="section-title"/>
+            <Label fx:id="memberTag" styleClass="tag, accent"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="codeLabel" styleClass="code-inline"/>
+            <Button fx:id="copyButton" text="복사" styleClass="ghost-quiet" onAction="#handleCopyCode"/>
+            <Button fx:id="closeRoomButton" text="방 종료" styleClass="danger"
+                    onAction="#handleCloseRoom"/>
+        </HBox>
+    </top>
 
-        <VBox spacing="4">
-            <Label text="그룹 대기실" styleClass="page-title"/>
-            <Label text="참여자가 모두 준비되면 조건을 합쳐 추천을 돌립니다."
-                   styleClass="page-subtitle" wrapText="true"/>
-            <Separator/>
-        </VBox>
+    <center>
+        <HBox alignment="TOP_LEFT">
 
-        <HBox spacing="16" alignment="TOP_LEFT" VBox.vgrow="ALWAYS">
-
-            <VBox spacing="12" prefWidth="440" minWidth="360">
-                <Label text="접속자" styleClass="section-title"/>
-                <TableView fx:id="memberTable" prefHeight="160"/>
-
-                <Label text="소켓 로그 &amp; 채팅" styleClass="section-title"/>
-                <ScrollPane fx:id="console" styleClass="console" fitToWidth="true" prefHeight="260">
-                    <VBox fx:id="logBox" spacing="2">
+            <!-- ── 대화 흐름 ─────────────────────────────────── -->
+            <VBox HBox.hgrow="ALWAYS" prefWidth="620">
+                <ScrollPane fx:id="chatScroll" styleClass="chat-scroll"
+                            fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="chatBox" spacing="10">
                         <padding>
-                            <Insets top="10" right="10" bottom="10" left="10"/>
+                            <Insets top="18" right="22" bottom="18" left="22"/>
                         </padding>
                     </VBox>
                 </ScrollPane>
 
                 <HBox spacing="8" alignment="CENTER_LEFT">
-                    <TextField fx:id="chatInput" promptText="메시지를 입력하고 Enter"
+                    <padding>
+                        <Insets top="14" right="22" bottom="14" left="22"/>
+                    </padding>
+                    <TextField fx:id="chatInput" promptText="메시지 보내기…"
                                HBox.hgrow="ALWAYS" onAction="#handleSend"/>
-                    <Button text="전송" onAction="#handleSend"/>
+                    <Button text="➤" styleClass="icon-send" onAction="#handleSend"/>
                 </HBox>
             </VBox>
 
-            <VBox spacing="12" HBox.hgrow="ALWAYS">
-                <VBox fx:id="mergedBox" styleClass="panel" spacing="8">
-                    <Label text="참여자 전원 조건 병합 결과" styleClass="section-title"/>
-                </VBox>
+            <Region styleClass="rule-v"/>
 
-                <Label text="추천 후보" styleClass="section-title"/>
-                <VBox fx:id="candidateBox" spacing="10"/>
+            <!-- ── 사람과 투표 ───────────────────────────────── -->
+            <VBox styleClass="panel" spacing="14" prefWidth="360" minWidth="320">
+                <padding>
+                    <Insets top="18" right="22" bottom="18" left="22"/>
+                </padding>
 
-                <Region VBox.vgrow="ALWAYS"/>
+                <FlowPane fx:id="avatarRow" hgap="10" vgap="10"/>
 
-                <HBox spacing="8" alignment="CENTER_RIGHT">
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="closeRoomButton" text="방 종료" onAction="#handleCloseRoom"/>
-                    <Button fx:id="resultButton" text="최종 결과" styleClass="primary"
-                            onAction="#handleResult"/>
-                </HBox>
+                <Region styleClass="rule"/>
+
+                <Label fx:id="voteTitle" text="투표" styleClass="section-title"/>
+
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="candidateBox" spacing="10"/>
+                </ScrollPane>
+
+                <Button fx:id="resultButton" text="최종 확정" styleClass="primary"
+                        maxWidth="Infinity" onAction="#handleResult"/>
+
+                <!-- 프로토콜 원문 — 평소에는 접혀 있습니다 -->
+                <TitledPane text="소켓 로그" expanded="false">
+                    <ScrollPane fx:id="console" styleClass="console" fitToWidth="true"
+                                prefHeight="160">
+                        <VBox fx:id="logBox" spacing="2">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                        </VBox>
+                    </ScrollPane>
+                </TitledPane>
             </VBox>
         </HBox>
-    </VBox>
-</ScrollPane>
+    </center>
+</BorderPane>

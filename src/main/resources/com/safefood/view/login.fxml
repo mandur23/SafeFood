@@ -1,74 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  1c 로그인 — 탭 대신 두 길을 나란히.
+
+  예전에는 회원/게스트가 토글 탭이라 게스트로 가려면 탭을 한 번 누르고 시작해야 했습니다.
+  지금은 둘이 같이 보여서, 게스트는 이름 + 초대 코드만 넣고 바로 방으로 갑니다.
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.safefood.view.controller.LoginController"
-      alignment="TOP_CENTER" styleClass="screen" spacing="16">
+      alignment="TOP_CENTER" styleClass="screen" spacing="24">
     <padding>
-        <Insets top="24" right="24" bottom="24" left="24"/>
+        <Insets top="44" right="40" bottom="40" left="40"/>
     </padding>
 
-    <fx:define>
-        <ToggleGroup fx:id="tabGroup"/>
-    </fx:define>
+    <VBox maxWidth="700" spacing="24">
 
-    <VBox maxWidth="480" spacing="16">
-
-        <VBox spacing="4">
-            <Label text="로그인" styleClass="page-title"/>
-            <Label text="회원으로 로그인하거나, 이름만 입력하고 게스트로 참여할 수 있습니다."
-                   styleClass="page-subtitle" wrapText="true"/>
-            <Separator/>
+        <VBox alignment="CENTER" spacing="6">
+            <Label text="S" styleClass="brand-mark, large"/>
+            <Label text="SafeFood" styleClass="display-title"/>
+            <Label text="오늘 뭐 먹지? 고민을 대신 해드려요" styleClass="page-subtitle"/>
         </VBox>
 
-        <VBox styleClass="card" spacing="12">
+        <HBox spacing="18" alignment="TOP_CENTER">
 
-            <HBox alignment="CENTER_LEFT">
-                <ToggleButton fx:id="memberTab" text="회원 로그인" selected="true"
-                              toggleGroup="$tabGroup" styleClass="tab-toggle, first"/>
-                <ToggleButton fx:id="guestTab" text="게스트 입장"
-                              toggleGroup="$tabGroup" styleClass="tab-toggle, last"/>
-            </HBox>
+            <!-- ── 회원 로그인 ─────────────────────────────── -->
+            <VBox styleClass="card, soft, elev" spacing="12" HBox.hgrow="ALWAYS"
+                  prefWidth="360">
+                <Label text="회원 로그인" styleClass="section-title"/>
 
-            <VBox fx:id="idBox" spacing="4">
-                <Label text="아이디 (ID)" styleClass="field-label"/>
-                <TextField fx:id="idField" promptText="아이디를 입력하세요"/>
+                <VBox spacing="4">
+                    <Label text="아이디" styleClass="field-label"/>
+                    <TextField fx:id="idField" promptText="아이디"/>
+                </VBox>
+
+                <VBox spacing="4">
+                    <Label text="비밀번호" styleClass="field-label"/>
+                    <PasswordField fx:id="passwordField" promptText="비밀번호"/>
+                </VBox>
+
+                <Label fx:id="memberError" styleClass="error-text" wrapText="true"
+                       visible="false" managed="false"/>
+
+                <Button text="로그인" styleClass="primary" maxWidth="Infinity"
+                        onAction="#handleLogin"/>
+
+                <HBox spacing="4" alignment="CENTER">
+                    <Label text="처음이신가요?" styleClass="sub"/>
+                    <Hyperlink text="회원가입" onAction="#handleSignUp"/>
+                </HBox>
             </VBox>
 
-            <VBox fx:id="passwordBox" spacing="4">
-                <Label text="비밀번호" styleClass="field-label"/>
-                <PasswordField fx:id="passwordField" promptText="비밀번호를 입력하세요"/>
+            <!-- ── 게스트 ──────────────────────────────────── -->
+            <VBox styleClass="card, accent2" spacing="12" HBox.hgrow="ALWAYS"
+                  prefWidth="300">
+                <Label text="게스트로 바로 참여" styleClass="section-title"/>
+                <Label text="가입 없이 이름만으로 그룹 방에 들어가요." styleClass="sub" wrapText="true"/>
+
+                <VBox spacing="4">
+                    <Label text="이름" styleClass="field-label"/>
+                    <TextField fx:id="nameField" promptText="홍길동"/>
+                </VBox>
+
+                <VBox spacing="4">
+                    <Label text="초대 코드 (선택)" styleClass="field-label"/>
+                    <TextField fx:id="guestCodeField" promptText="6WMK4-2A0P8-Q3XN"/>
+                </VBox>
+
+                <Label fx:id="guestError" styleClass="error-text" wrapText="true"
+                       visible="false" managed="false"/>
+
+                <Button text="방으로 입장 →" styleClass="primary-2" maxWidth="Infinity"
+                        onAction="#handleGuest"/>
             </VBox>
-
-            <VBox fx:id="nameBox" spacing="4" visible="false" managed="false">
-                <Label text="게스트 이름" styleClass="field-label"/>
-                <TextField fx:id="nameField" promptText="게스트 이름을 입력하세요 (필수)"/>
-            </VBox>
-
-            <Label fx:id="guestHintLabel"
-                   text="비회원은 계정 가입 없이 이름 + 알레르기·취향 정보만 입력하여 그룹 방에 참여할 수 있습니다."
-                   styleClass="sub" wrapText="true"
-                   visible="false" managed="false"/>
-
-            <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"
-                   visible="false" managed="false"/>
-
-            <HBox spacing="8" alignment="CENTER_RIGHT">
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="signUpButton" text="회원가입" styleClass="outline" onAction="#handleSignUp"/>
-                <Button text="로그인" styleClass="primary" onAction="#handleLogin"/>
-            </HBox>
-        </VBox>
+        </HBox>
     </VBox>
 </VBox>

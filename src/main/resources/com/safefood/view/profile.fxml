@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  1h 내 프로필 — 세로로 길던 카드 4장을 2열로 접고, 저장 버튼을 없앴습니다.
+
+  심각도는 따로 고르는 칸이 아니라 알레르기 칩 안에 들어갔고, 바뀐 값은 곧바로 저장됩니다
+  (슬라이더는 잠깐 멎은 뒤 한 번만).
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
@@ -13,106 +18,89 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.safefood.view.controller.ProfileController">
 
     <top>
-        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="toolbar">
-            <ImageView fitHeight="32" fitWidth="32" preserveRatio="true">
-                <image>
-                    <Image url="@icon/logo.png"/>
-                </image>
-            </ImageView>
-            <Button text="1. 메뉴 선택" styleClass="nav-button" onAction="#handleMain"/>
-            <Button text="2. 내 정보" styleClass="nav-button, active"/>
-            <Button text="3. 기록" styleClass="nav-button" onAction="#handleHistory"/>
+        <HBox spacing="18" alignment="CENTER_LEFT" styleClass="toolbar">
+            <HBox spacing="9" alignment="CENTER_LEFT">
+                <Label text="S" styleClass="brand-mark"/>
+                <Label text="SafeFood" styleClass="section-title"/>
+            </HBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="userLabel" text="사용자님 로그인 중" styleClass="sub"/>
-            <Button text="로그아웃" onAction="#handleLogout"/>
+            <Button text="추천" styleClass="nav-button" onAction="#handleMain"/>
+            <Button text="내 정보" styleClass="nav-button, active"/>
+            <Button text="기록" styleClass="nav-button" onAction="#handleHistory"/>
+            <Button text="같이 먹기" styleClass="primary" onAction="#handleGroup"/>
+            <Label fx:id="userLabel" text="사용자님" styleClass="sub"/>
+            <Button text="로그아웃" styleClass="ghost-quiet" onAction="#handleLogout"/>
         </HBox>
     </top>
 
     <center>
         <ScrollPane fitToWidth="true">
-            <VBox alignment="TOP_CENTER" styleClass="screen" spacing="16">
+            <VBox alignment="TOP_CENTER" styleClass="screen">
                 <padding>
-                    <Insets top="24" right="24" bottom="24" left="24"/>
+                    <Insets top="8" right="28" bottom="30" left="28"/>
                 </padding>
 
-                <VBox maxWidth="900" spacing="16">
+                <VBox maxWidth="900" spacing="18">
 
-                    <VBox spacing="4">
+                    <HBox spacing="12" alignment="CENTER_LEFT">
                         <Label text="내 프로필" styleClass="page-title"/>
-                        <Label text="등록한 알레르기와 취향을 확인하고 바꿀 수 있습니다."
-                               styleClass="page-subtitle"/>
-                        <Separator/>
-                    </VBox>
+                        <Label fx:id="autoSaveTag" text="변경사항 자동 저장" styleClass="tag, accent2"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="닉네임·비밀번호 변경" styleClass="ghost"
+                                onAction="#handleEditInfo"/>
+                    </HBox>
 
-                    <VBox styleClass="card">
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Label text="계정" styleClass="section-title"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="닉네임 / 비밀번호 변경" styleClass="outline"
-                                    onAction="#handleEditInfo"/>
-                        </HBox>
-                    </VBox>
+                    <HBox spacing="20" alignment="TOP_LEFT">
 
-                    <VBox styleClass="card" spacing="10">
-                        <Label text="보유 알레르기" styleClass="section-title"/>
-                        <Label text="X를 누르면 목록에서 빠집니다." styleClass="sub"/>
-                        <FlowPane fx:id="ownedPane" styleClass="chip-area" hgap="8" vgap="8"/>
+                        <!-- ── 보유 알레르기 ─────────────────────── -->
+                        <VBox styleClass="card, soft, elev" spacing="12" HBox.hgrow="ALWAYS"
+                              prefWidth="430">
+                            <Label text="보유 알레르기" styleClass="section-title"/>
+                            <FlowPane fx:id="ownedPane" styleClass="chip-area" hgap="8" vgap="8"/>
 
-                        <HBox spacing="8">
-                            <TextField fx:id="searchField" promptText="알레르기 이름으로 검색 (예: 고등어)"
-                                       HBox.hgrow="ALWAYS"/>
-                            <Button text="검색" onAction="#handleSearch"/>
-                        </HBox>
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <TextField fx:id="searchField"
+                                           promptText="알레르기 검색 (예: 고등어)"
+                                           onAction="#handleAddAllergy" HBox.hgrow="ALWAYS"/>
+                                <Button text="＋ 추가" styleClass="outline"
+                                        onAction="#handleAddAllergy"/>
+                            </HBox>
 
-                        <Label text="심각도 — 높을수록 혼입 가능(POSSIBLE) 메뉴의 순위를 크게 낮춥니다"
-                               styleClass="field-label" wrapText="true"/>
-                        <FlowPane fx:id="severityPane" styleClass="chip-area" hgap="8" vgap="8"/>
-
-                        <HBox spacing="8" alignment="CENTER_RIGHT">
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="알레르기 추가 저장" styleClass="primary" onAction="#handleAddAllergy"/>
-                        </HBox>
-                    </VBox>
-
-                    <VBox styleClass="card" spacing="10">
-                        <Label text="음식 취향" styleClass="section-title"/>
-                        <FlowPane fx:id="categoryPane" styleClass="chip-area" hgap="8" vgap="8"/>
-
-                        <Label text="예산 범위" styleClass="field-label"/>
-                        <Label fx:id="priceLabel" text="8,000원 ~ 15,000원" styleClass="accent-text"/>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Label text="상한" styleClass="sub" minWidth="30"/>
-                            <Slider fx:id="priceMax" min="0" max="30000" value="15000"
-                            majorTickUnit="1000" minorTickCount="0" snapToTicks="true"
-                            showTickMarks="true" showTickLabels="true" HBox.hgrow="ALWAYS"/>
-                        </HBox>
-
-                        <VBox spacing="4">
-                            <Label text="최대 탐색 거리" styleClass="field-label"/>
-                            <ComboBox fx:id="distanceBox" maxWidth="Infinity"/>
+                            <Label text="심각도가 높을수록 '혼입 가능' 메뉴 순위를 크게 낮춰요."
+                                   styleClass="micro" wrapText="true"/>
+                            <Label fx:id="allergyHint" styleClass="hint-bad" wrapText="true"
+                                   visible="false" managed="false"/>
                         </VBox>
 
-                        <Label text="선호 맵기" styleClass="field-label"/>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Label text="안매움(0)" styleClass="sub"/>
-                            <Slider fx:id="spicySlider" min="0" max="5" value="3"
-                                    majorTickUnit="1" minorTickCount="0" snapToTicks="true"
-                                    showTickMarks="true" HBox.hgrow="ALWAYS"/>
-                            <Label text="최강매움(5)" styleClass="sub"/>
-                            <Label fx:id="spicyValue" text="3단계" styleClass="accent-text" minWidth="60"/>
-                        </HBox>
-                    </VBox>
+                        <!-- ── 음식 취향 ─────────────────────────── -->
+                        <VBox styleClass="card, soft, elev" spacing="12" HBox.hgrow="ALWAYS"
+                              prefWidth="430">
+                            <Label text="음식 취향" styleClass="section-title"/>
+                            <FlowPane fx:id="categoryPane" styleClass="chip-area" hgap="6" vgap="6"/>
 
-                    <HBox spacing="8" alignment="CENTER_RIGHT">
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Button text="취향 및 조건 저장" styleClass="primary" onAction="#handleSave"/>
+                            <VBox spacing="2">
+                                <Label fx:id="priceLabel" styleClass="field-label"/>
+                                <Slider fx:id="priceMax" min="0" max="30000" value="15000"
+                                        majorTickUnit="1000" minorTickCount="0"
+                                        snapToTicks="true"/>
+                            </VBox>
+
+                            <VBox spacing="2">
+                                <Label fx:id="spicyLabel" styleClass="field-label"/>
+                                <Slider fx:id="spicySlider" min="0" max="5" value="3"
+                                        majorTickUnit="1" minorTickCount="0" snapToTicks="true"/>
+                            </VBox>
+
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <Label text="최대 거리" styleClass="field-label"/>
+                                <HBox fx:id="distanceSeg" alignment="CENTER_LEFT"/>
+                            </HBox>
+                        </VBox>
                     </HBox>
                 </VBox>
             </VBox>

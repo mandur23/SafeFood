@@ -1,14 +1,24 @@
 package com.safefood.view;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
+import javafx.animation.SequentialTransition;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -22,6 +32,15 @@ public final class AppNav {
 
     private static final String BASE = "/com/safefood/view/";
     private static final String CSS = BASE + "app.css";
+
+    /** 토스트가 쌓이는 층. 모든 Scene 의 루트 StackPane 이 하나씩 갖습니다. */
+    private static final String TOAST_LAYER_ID = "toast-layer";
+
+    /** 한 번에 보여 줄 최대 개수 — 넘치면 오래된 것부터 밀어냅니다. */
+    private static final int MAX_TOASTS = 3;
+
+    private static final Duration TOAST_IN = Duration.millis(180);
+    private static final Duration TOAST_OUT = Duration.millis(240);
 
     private static Stage stage;
     private static Scene scene;
@@ -72,11 +91,12 @@ public final class AppNav {
 
     private static void showRoot(String title, Parent root) {
         if (scene == null) {
-            scene = new Scene(root, WIDTH, HEIGHT);
+            scene = new Scene(withToastLayer(root), WIDTH, HEIGHT);
             applyCss(scene);
             stage.setScene(scene);
         } else {
-            scene.setRoot(root);
+            // 루트를 통째로 갈지 않고 화면만 갈아 끼웁니다 — 토스트 층이 살아남아야 합니다
+            ((StackPane) scene.getRoot()).getChildren().set(0, root);
         }
         stage.setTitle(title);
         if (!stage.isShowing()) {
@@ -107,7 +127,9 @@ public final class AppNav {
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.setTitle(title);
 
-        Scene modalScene = new Scene(root);
+        // 다이얼로그도 자기 토스트 층을 갖습니다 — 안 그러면 '복사되었습니다' 같은 알림이
+        // 모달 뒤(본 창)에 떠서 보이지 않습니다
+        Scene modalScene = new Scene(withToastLayer(root));
         applyCss(modalScene);
         modal.setScene(modalScene);
         modal.setResizable(false);
@@ -143,19 +165,122 @@ public final class AppNav {
         });
     }
 
-    // 알림창도 다이얼로그와 같은 이유로 미룹니다 — close() 직후 알림을 띄우는 코드가 안전해집니다.
-    // (예: 정보 변경 창을 닫으며 "변경되었습니다" 안내)
+    // ══ 알림 — 토스트 ═══════════════════════════════════════════
+
+    /*
+     * 예전에는 셋 다 모달 Alert 이었습니다. "복사되었습니다" 한 줄을 읽으려고 확인 버튼을
+     * 누르게 만드는 것이 리디자인의 '클릭 줄이기'와 정면으로 어긋나서, 화면 위에 잠깐
+     * 떠올랐다 사라지는 토스트로 바꿨습니다.
+     *
+     * 토스트는 클릭하면 즉시 사라지고, 글이 길수록 오래 머뭅니다. 답을 받아야 하는
+     * confirm() 만 모달로 남습니다 — 그건 사라지면 안 되는 물음입니다.
+     */
+
     public static void info(String message) {
-        Platform.runLater(() -> alert(Alert.AlertType.INFORMATION, "안내", message));
+        toast(message, "info");
     }
 
     public static void warn(String message) {
-        Platform.runLater(() -> alert(Alert.AlertType.WARNING, "확인해 주세요", message));
+        toast(message, "warn");
     }
 
     public static void error(String message) {
-        Platform.runLater(() -> alert(Alert.AlertType.ERROR, "오류", message));
+        toast(message, "error");
     }
+
+    /** 좋은 소식용 — 세이지 톤. */
+    public static void success(String message) {
+        toast(message, "good");
+    }
+
+    private static void toast(String message, String variant) {
+        // 수신 스레드에서 부르는 자리가 있어 UI 스레드로 넘깁니다.
+        // 미루는 김에 close() 직후의 호출도 안전해집니다 — 창이 다 닫힌 뒤에 자리를 고릅니다.
+        Platform.runLater(() -> showToast(message, variant));
+    }
+
+    private static void showToast(String message, String variant) {
+        VBox layer = activeToastLayer();
+        if (layer == null) {
+            alert(Alert.AlertType.INFORMATION, "안내", message);   // 띄울 자리가 없으면 예전 방식으로
+            return;
+        }
+
+        Label card = new Label(message);
+        card.getStyleClass().addAll("toast", variant);
+        card.setWrapText(true);
+        card.setMaxWidth(440);
+        card.setOpacity(0);
+        card.setTranslateY(16);
+
+        while (layer.getChildren().size() >= MAX_TOASTS) {
+            layer.getChildren().remove(0);
+        }
+        layer.getChildren().add(card);
+
+        FadeTransition fadeIn = new FadeTransition(TOAST_IN, card);
+        fadeIn.setToValue(1);
+        TranslateTransition riseIn = new TranslateTransition(TOAST_IN, card);
+        riseIn.setToY(0);
+        riseIn.play();
+
+        PauseTransition stay = new PauseTransition(readingTime(message));
+
+        FadeTransition fadeOut = new FadeTransition(TOAST_OUT, card);
+        fadeOut.setToValue(0);
+
+        SequentialTransition life = new SequentialTransition(fadeIn, stay, fadeOut);
+        life.setOnFinished(event -> layer.getChildren().remove(card));
+        life.play();
+
+        // 눌러서 바로 치우기 — 긴 오류 문구를 다 읽은 사람이 기다리지 않아도 되게
+        card.setOnMouseClicked(event -> {
+            life.stop();
+            layer.getChildren().remove(card);
+        });
+    }
+
+    /** 글이 길수록 오래 머뭅니다 — 2.5초에서 시작해 8초까지. */
+    private static Duration readingTime(String message) {
+        double millis = 2500 + message.length() * 45.0;
+        return Duration.millis(Math.min(millis, 8000));
+    }
+
+    /**
+     * 지금 앞에 나와 있는 창의 토스트 층. 모달 다이얼로그가 떠 있으면 그 위에 얹어야
+     * 보이므로, 본 창이 아니라 <b>포커스를 가진 창</b>을 기준으로 찾습니다.
+     */
+    private static VBox activeToastLayer() {
+        Window target = null;
+        for (Window window : Window.getWindows()) {
+            if (window.isFocused() && window.isShowing()) {
+                target = window;
+                break;
+            }
+        }
+        if (target == null) {
+            target = stage;
+        }
+        if (target == null || target.getScene() == null) {
+            return null;
+        }
+        Node found = target.getScene().getRoot().lookup("#" + TOAST_LAYER_ID);
+        return found instanceof VBox layer ? layer : null;
+    }
+
+    /** 화면을 토스트 층과 함께 StackPane 에 담습니다. 화면이 아래, 토스트가 위. */
+    private static Parent withToastLayer(Parent content) {
+        VBox layer = new VBox(8);
+        layer.setId(TOAST_LAYER_ID);
+        layer.getStyleClass().add("toast-layer");
+        layer.setAlignment(Pos.BOTTOM_CENTER);
+        // 층 자체는 클릭을 가로채지 않고, 토스트 카드에만 클릭이 닿게 합니다
+        layer.setPickOnBounds(false);
+
+        return new StackPane(content, layer);
+    }
+
+    // ══ 확인 — 답을 받아야 해서 모달로 남습니다 ══════════════════
 
     public static boolean confirm(String message) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO);
