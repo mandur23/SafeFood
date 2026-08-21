@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  1e 회원가입 — '중복 확인' 버튼을 없앴습니다.
+
+  입력이 멎으면 컨트롤러가 알아서 물어보고 칸 아래에 결과를 씁니다. 아이디와 닉네임에서
+  각각 한 번씩, 클릭 2회가 사라집니다.
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -14,51 +21,55 @@
       fx:controller="com.safefood.view.controller.SignUpController"
       alignment="TOP_CENTER" styleClass="screen" spacing="16">
     <padding>
-        <Insets top="24" right="24" bottom="24" left="24"/>
+        <Insets top="48" right="40" bottom="40" left="40"/>
     </padding>
 
-    <VBox maxWidth="480" spacing="16">
+    <VBox maxWidth="460" styleClass="card, soft, elev" spacing="14">
 
-        <VBox spacing="4">
-            <Label text="회원가입" styleClass="page-title"/>
-            <Label text="계정을 만들고 나면 취향·알레르기를 입력받습니다." styleClass="page-subtitle" wrapText="true"/>
-            <Separator/>
-        </VBox>
+        <Label text="회원가입" styleClass="page-title"/>
 
-        <VBox styleClass="card" spacing="10">
-
-            <VBox spacing="4">
-                <Label text="아이디 (ID)" styleClass="field-label"/>
-                <HBox spacing="8">
-                    <TextField fx:id="idField" promptText="아이디를 입력하세요" HBox.hgrow="ALWAYS"/>
-                    <Button text="중복 확인" onAction="#handleCheckId"/>
-                </HBox>
-            </VBox>
-            <Label fx:id="checkResult" text="아이디 중복 확인을 해 주세요." styleClass="sub"/>
-
-            <VBox spacing="4">
-                <Label text="비밀번호" styleClass="field-label"/>
-                <PasswordField fx:id="passwordField" promptText="비밀번호를 입력하세요"/>
-            </VBox>
-
-            <VBox spacing="4">
-                <Label text="비밀번호 확인" styleClass="field-label"/>
-                <PasswordField fx:id="confirmField" promptText="비밀번호를 다시 입력하세요"/>
-            </VBox>
-
-            <VBox spacing="4">
-                <Label text="닉네임" styleClass="field-label"/>
-                <TextField fx:id="nicknameField" promptText="사용할 닉네임을 입력하세요"/>
-            </VBox>
-
-            <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"
+        <VBox spacing="2">
+            <Label text="아이디" styleClass="field-label"/>
+            <TextField fx:id="idField" promptText="minsu_kim"/>
+            <Label fx:id="idHint" styleClass="hint-ok" wrapText="true"
                    visible="false" managed="false"/>
         </VBox>
 
-        <HBox spacing="8" alignment="CENTER_RIGHT">
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button text="취소" onAction="#handleCancel"/>
-            <Button text="회원가입 완료" styleClass="primary" onAction="#handleSubmit"/>
+        <VBox spacing="2">
+            <Label text="비밀번호" styleClass="field-label"/>
+            <PasswordField fx:id="passwordField" promptText="8자 이상"/>
+            <HBox spacing="3" alignment="CENTER_LEFT">
+                <padding>
+                    <Insets top="6" right="8" bottom="0" left="8"/>
+                </padding>
+                <Region fx:id="strength1" styleClass="strength-bar" HBox.hgrow="ALWAYS"/>
+                <Region fx:id="strength2" styleClass="strength-bar" HBox.hgrow="ALWAYS"/>
+                <Region fx:id="strength3" styleClass="strength-bar" HBox.hgrow="ALWAYS"/>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="2">
+            <Label text="비밀번호 확인" styleClass="field-label"/>
+            <PasswordField fx:id="confirmField" promptText="다시 한 번"/>
+            <Label fx:id="confirmHint" styleClass="hint-bad" wrapText="true"
+                   visible="false" managed="false"/>
+        </VBox>
+
+        <VBox spacing="2">
+            <Label text="닉네임" styleClass="field-label"/>
+            <TextField fx:id="nicknameField" promptText="민수"/>
+            <Label fx:id="nicknameHint" styleClass="hint-ok" wrapText="true"
+                   visible="false" managed="false"/>
+        </VBox>
+
+        <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"
+               visible="false" managed="false"/>
+
+        <Button text="가입하고 취향 알려주기 →" styleClass="primary"
+                maxWidth="Infinity" onAction="#handleSubmit"/>
+
+        <HBox alignment="CENTER">
+            <Hyperlink text="로그인으로 돌아가기" onAction="#handleCancel"/>
         </HBox>
     </VBox>
 </VBox>

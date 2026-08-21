@@ -37,17 +37,22 @@ public final class DemoData {
 
     public enum Safety {
 
-        SAFE("SAFE (알레르기 안전)", "safe"),
+        SAFE("SAFE (알레르기 안전)", "✓ 알레르기 안전", "safe"),
 
-        POSSIBLE("POSSIBLE (혼입 가능)", "possible"),
+        POSSIBLE("POSSIBLE (혼입 가능)", "⚠ 혼입 가능", "possible"),
 
-        CONTAINS("CONTAINS (알레르기 원료 포함)", "contains");
+        CONTAINS("CONTAINS (알레르기 원료 포함)", "✕ 원료 포함", "contains");
 
         public final String label;
+
+        /** 카드·칩에 들어가는 짧은 표기 — 리디자인은 약어 대신 이쪽을 씁니다. */
+        public final String shortLabel;
+
         public final String styleClass;
 
-        Safety(String label, String styleClass) {
+        Safety(String label, String shortLabel, String styleClass) {
             this.label = label;
+            this.shortLabel = shortLabel;
             this.styleClass = styleClass;
         }
     }
@@ -55,7 +60,7 @@ public final class DemoData {
     public record Recommendation(int rank, int score, String menu, String restaurant,
                                  Safety safety, int spicyLevel, String reason,
                                  String address, String hours, double rating,
-                                 boolean blocked, String alternative) {
+                                 String distance, boolean blocked, String alternative) {
     }
 
     public static final List<Recommendation> RECOMMENDATIONS = List.of(
@@ -64,20 +69,20 @@ public final class DemoData {
                     "선호하는 한식이고, 등록하신 알레르기 재료가 들어가지 않습니다. "
                             + "매운맛 3단계로 설정하신 정도와 맞고, 예산 안에 들어옵니다.",
                     "서울 강남구 테헤란로 12길 5", "11:00 ~ 21:00", 4.5,
-                    false, null),
+                    "350m", false, null),
 
             new Recommendation(2, 88, "돈코츠 라멘", "이치란야",
                     Safety.POSSIBLE, 1,
                     "선호 카테고리는 아니지만 '든든하게' 태그와 잘 맞습니다. "
                             + "같은 조리대에서 새우를 다루므로 혼입 가능성이 있습니다.",
                     "서울 강남구 역삼로 24", "11:30 ~ 22:00", 4.2,
-                    false, null),
+                    "600m", false, null),
 
             new Recommendation(0, 0, "감바스 알 아히요", "라핀카",
                     Safety.CONTAINS, 2,
                     "등록하신 '새우' 알레르기 원료가 포함되어 후보에서 제외했습니다.",
                     "서울 강남구 논현로 145", "17:00 ~ 24:00", 4.7,
-                    true, "새우 대신 버섯을 쓴 '버섯 아히요'는 드실 수 있습니다.")
+                    "820m", true, "버섯 아히요는 드실 수 있어요")
     );
 
     public record HistoryRow(String date, String type, String menu, String restaurant, String note) {

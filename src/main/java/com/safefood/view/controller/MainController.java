@@ -1,6 +1,8 @@
 package com.safefood.view.controller;
 
 import com.safefood.dto.FavoriteDto;
+import com.safefood.dto.RecommendationDto;
+import com.safefood.dto.UserDto;
 import com.safefood.network.GroupSession;
 import com.safefood.view.AppNav;
 import com.safefood.view.DemoData;
@@ -8,162 +10,236 @@ import com.safefood.view.Widgets;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 메인 추천 화면 (리디자인 1a).
+ */
 public class MainController {
 
     @FXML private ComboBox<String> categoryBox;
     @FXML private ComboBox<String> distanceBox;
+    @FXML private ComboBox<String> budgetBox;
     @FXML private FlowPane moodPane;
-    @FXML private CheckBox excludeEaten;
     @FXML private VBox cardBox;
+    @FXML private VBox blockedBox;
     @FXML private Label userLabel;
+    @FXML private Label greetingLabel;
+    @FXML private Label excludeLabel;
+    @FXML private Hyperlink excludeToggle;
 
     private final List<ToggleButton> moodChips = new ArrayList<>();
+    private boolean excludeEaten = true;
 
     @FXML
     private void initialize() {
+        String name;
         if (com.safefood.dto.Session.getCurrentUser() != null) {
-            String myNick = com.safefood.dto.Session.getCurrentUser().getNickname();
-            userLabel.setText(myNick + "님 로그인 중");
+            name = com.safefood.dto.Session.getCurrentUser().getNickname();
+            if (name == null || name.isBlank()) {
+                name = com.safefood.dto.Session.getCurrentUser().getLoginId();
+            }
         } else {
-            userLabel.setText(GroupSession.get().displayName() + "님 로그인 중");
+            name = GroupSession.get().displayName();
         }
+        if (name == null || name.isBlank()) {
+            name = "사용자";
+        }
+        userLabel.setText(name + "님");
+        greetingLabel.setText("오늘 뭐 먹지, " + name + "님?");
 
         categoryBox.getItems().add("전체");
-        categoryBox.getItems().addAll("한식", "중식", "일식", "양식", "아시안", "패스트푸드");
+        categoryBox.getItems().addAll(DemoData.CATEGORIES);
         categoryBox.setValue("전체");
 
         distanceBox.getItems().setAll("500m", "1km", "2km", "3km", "제한없음");
         distanceBox.setValue("1km");
 
-        Widgets.fillChips(moodPane,
-                List.of("스트레스 해소", "속풀이·해장", "가벼운 식사", "든든한 한끼"), moodChips);
+        budgetBox.getItems().setAll(DemoData.BUDGETS);
+        budgetBox.setValue("12,000원 이하");
 
+        fillMoodChips();
+        renderExcludeNotice();
         fillCards();
     }
 
+    private void fillMoodChips() {
+        moodPane.getChildren().clear();
+        moodChips.clear();
+        for (String mood : List.of("든든한 한끼", "속풀이·해장", "가벼운 식사", "혼밥")) {
+            ToggleButton chip = Widgets.compactChip(mood);
+            moodChips.add(chip);
+            moodPane.getChildren().add(chip);
+        }
+        if (!moodChips.isEmpty()) {
+            moodChips.get(0).setSelected(true);
+        }
+    }
+
+    private void renderExcludeNotice() {
+        excludeLabel.setText(excludeEaten
+                ? "어제 먹은 메뉴는 자동으로 제외했어요 ·"
+                : "어제 먹은 메뉴도 후보에 넣었어요 ·");
+        excludeToggle.setText(excludeEaten ? "포함하기" : "다시 제외하기");
+    }
+
+    @FXML
+    private void handleToggleEaten() {
+        excludeEaten = !excludeEaten;
+        renderExcludeNotice();
+        fillCards();
+    }
+
+    // ── 카드 ────────────────────────────────────────────────────
+
     private void fillCards() {
         cardBox.getChildren().clear();
-        List<com.safefood.dto.RecommendationDto> realItems = new com.safefood.dao.RecommendationDao().getRecommendationsFromDb();
+        if (blockedBox != null) {
+            blockedBox.getChildren().clear();
+        }
 
-        com.safefood.dto.UserDto me = com.safefood.dto.Session.getCurrentUser();
-        java.util.List<com.safefood.dto.FavoriteDto> myFavs =
-                (me != null && me.getId() != -1) ? new com.safefood.service.FavoriteService().
-                getFavorites(me.getId()) : new java.util.ArrayList<>();
+        List<RecommendationDto> realItems = new com.safefood.dao.RecommendationDao().getRecommendationsFromDb();
 
-        for(com.safefood.dto.RecommendationDto item : realItems) {
-            // 찜 목록 있는지 검사
+        UserDto me = com.safefood.dto.Session.getCurrentUser();
+        List<FavoriteDto> myFavs = (me != null && me.getId() != -1)
+                ? new com.safefood.service.FavoriteService().getFavorites(me.getId())
+                : new ArrayList<>();
+
+        for (RecommendationDto item : realItems) {
             boolean isAlreadyFavorited = false;
-            for(com.safefood.dto.FavoriteDto fav : myFavs) {
-                if(fav.getMenu().equals(item.getMenu()) && fav.getRestaurant().equals(item.getRestaurant())) {
+            for (FavoriteDto fav : myFavs) {
+                if (fav.getMenu() != null && fav.getMenu().equals(item.getMenu())
+                        && fav.getRestaurant() != null && fav.getRestaurant().equals(item.getRestaurant())) {
                     isAlreadyFavorited = true;
                     break;
                 }
             }
-            // 알아낸 후 찜 여부 넘김
-            cardBox.getChildren().add(card(item, isAlreadyFavorited));
+
+            if (item.isBlocked()) {
+                if (blockedBox != null) {
+                    blockedBox.getChildren().add(blockedRow(item));
+                } else {
+                    cardBox.getChildren().add(card(item, isAlreadyFavorited));
+                }
+            } else {
+                cardBox.getChildren().add(card(item, isAlreadyFavorited));
+            }
         }
     }
 
-    private VBox card(com.safefood.dto.RecommendationDto item, boolean isAlreadyFavorited) {
+    private HBox card(RecommendationDto item, boolean isAlreadyFavorited) {
+        // 왼쪽 — 원형 순위 + 점수
+        Label score = Widgets.micro(item.getScore() + "점");
+        VBox rank = new VBox(4, Widgets.rankCircle(item.getRank()), score);
+        rank.setAlignment(Pos.CENTER);
+        rank.setMinWidth(56);
+        rank.setPrefWidth(56);
+
+        // 제목 줄 — 메뉴 · 가게·평점 · 안전 · 맵기
         Label menu = new Label(item.getMenu());
         menu.getStyleClass().add("menu-name");
 
-        HBox titleRow = new HBox(10, menu, Widgets.rankBadge(item.getRank(), item.getScore()));
-        titleRow.setAlignment(Pos.CENTER_LEFT);
+        Label meta = new Label(item.getRestaurant() + " · ★ " + item.getRating());
+        meta.getStyleClass().add("restaurant-name");
 
-        Label restaurant = new Label(item.getRestaurant());
-        restaurant.getStyleClass().add("restaurant-name");
-
-        HBox badgeRow = new HBox(8,
+        HBox titleRow = new HBox(10, menu, meta, Widgets.hSpacer(),
                 Widgets.safetyBadge(item.getSafety()),
-                Widgets.sub("매운맛 " + item.getSpicyLevel() + "단계"));
-        badgeRow.setAlignment(Pos.CENTER_LEFT);
+                Widgets.tag("맵기 " + item.getSpicyLevel() + "단계", "neutral"));
+        titleRow.setAlignment(Pos.CENTER_LEFT);
 
         Label reason = new Label(item.getReason());
         reason.setWrapText(true);
-        VBox reasonPanel = new VBox(reason);
-        reasonPanel.getStyleClass().add("reason-panel");
 
-        HBox infoRow = new HBox(16,
-                Widgets.sub(item.getAddress()),
-                Widgets.sub(item.getHours()),
-                Widgets.sub("★ " + item.getRating()));
-        infoRow.setAlignment(Pos.CENTER_LEFT);
+        // 액션 — 버튼 2개 + 찜 아이콘
+        Button eat = new Button("이걸로 먹을래요");
+        eat.getStyleClass().add("primary");
+        eat.setOnAction(event -> {
+            UserDto u = com.safefood.dto.Session.getCurrentUser();
+            if (u == null || u.getId() == -1) {
+                AppNav.warn("게스트는 기록을 저장할 수 없습니다.");
+                return;
+            }
+            boolean success = new com.safefood.service.HistoryService().saveEatenHistory(u.getId(), item.getMenuId());
+            if (success) {
+                AppNav.success(item.getMenu() + "(으)로 정했어요 — 기록에 남기고 다음 추천에서 제외합니다");
+            } else {
+                AppNav.error("저장에 실패했습니다.");
+            }
+        });
+        eat.setDisable(item.isBlocked());
 
-        ToggleButton favorite = new ToggleButton("♡ 찜하기");
-        favorite.getStyleClass().add("chip");
+        Button map = new Button("가게·지도 보기");
+        map.getStyleClass().add("ghost");
+        map.setOnAction(event -> AppNav.dialog(
+                item.getMenu() + " — 맛집 상세", "restaurant-detail.fxml",
+                (RestaurantDetailController controller) -> controller.setItem(item)));
 
-        // 처음 그릴 때 찜 여부에 따라 버튼 세팅
+        ToggleButton favorite = new ToggleButton(isAlreadyFavorited ? "♥" : "♡");
+        favorite.getStyleClass().addAll("icon");
         favorite.setSelected(isAlreadyFavorited);
-        favorite.setText(isAlreadyFavorited ? "♥ 찜함" : "♡ 찜하기");
-
         favorite.selectedProperty().addListener((observable, before, on) -> {
-            favorite.setText(on ? "♥ 찜함" : "♡ 찜하기");
-            com.safefood.dto.UserDto me = com.safefood.dto.Session.getCurrentUser();
-            if (me == null || me.getId() == -1) {
-                com.safefood.view.AppNav.warn("게스트는 찜하기를 사용할 수 없습니다.");
+            favorite.setText(on ? "♥" : "♡");
+            UserDto u = com.safefood.dto.Session.getCurrentUser();
+            if (u == null || u.getId() == -1) {
+                AppNav.warn("게스트는 찜하기를 사용할 수 없습니다.");
                 return;
             }
             if (on) {
-                new com.safefood.service.FavoriteService()
-                    .addFavorite(me.getId(), item.getRestaurantId(), item.getMenuId());
+                new com.safefood.service.FavoriteService().addFavorite(u.getId(), item.getRestaurantId(), item.getMenuId());
             } else {
-                new com.safefood.service.FavoriteService()
-                    .removeFavoriteByMenu(me.getId(), item.getRestaurantId(), item.getMenuId());
+                new com.safefood.service.FavoriteService().removeFavoriteByMenu(u.getId(), item.getRestaurantId(), item.getMenuId());
             }
         });
 
-        Button map = new Button("맛집/지도");
-        map.setOnAction(event -> AppNav.dialog(
-                item.getMenu() + " - 맛집 상세 및 지도 정보", "restaurant-detail.fxml",
-                (RestaurantDetailController controller) -> {
-                    // 지도 기능(M-01) 때 상세 연동할 예정이므로 비워둡니다.
-                }));
-
-        Button record = new Button("기록하기");
-        record.setOnAction(event -> {
-            com.safefood.dto.UserDto me = com.safefood.dto.Session.getCurrentUser();
-            if(me == null || me.getId() == -1){
-                com.safefood.view.AppNav.warn("게스트는 기록을 저장할 수 없습니다.");
-                return;
-            }
-            boolean success = new com.safefood.service.HistoryService()
-                    .saveEatenHistory(me.getId(), item.getMenuId());
-
-            if(success){ com.safefood.view.AppNav.info("기록되었습니다!"); } 
-            else{ com.safefood.view.AppNav.error("저장에 실패했습니다."); }
-        });
-        record.setDisable(item.isBlocked());
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox actions = new HBox(8, favorite, spacer, map, record);
+        HBox actions = new HBox(8, eat, map, Widgets.hSpacer(), favorite);
         actions.setAlignment(Pos.CENTER_LEFT);
 
-        VBox card = new VBox(10, titleRow, restaurant, badgeRow, reasonPanel, infoRow, actions);
-        card.getStyleClass().add("card");
+        VBox body = new VBox(7, titleRow, reason, actions);
+        HBox.setHgrow(body, Priority.ALWAYS);
+
+        HBox card = new HBox(20, rank, body);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.getStyleClass().addAll("card", "soft", "elev");
 
         if (item.isBlocked()) {
             card.getStyleClass().add("blocked");
             if (item.getAlternative() != null) {
-                card.getChildren().add(4, Widgets.sub("대체 메뉴 — " + item.getAlternative()));
+                body.getChildren().add(Widgets.sub("대체 메뉴 — " + item.getAlternative()));
             }
         }
         return card;
     }
+
+    /** 차단된 메뉴 — 왜 빠졌는지와 대체 메뉴만 한 줄로 보여 줍니다. */
+    private HBox blockedRow(RecommendationDto item) {
+        Label struck = new Label(item.getMenu() + " · " + item.getRestaurant());
+        struck.getStyleClass().add("strike");
+
+        Hyperlink why = new Hyperlink("왜 빠졌나요?");
+        why.setOnAction(event -> AppNav.info(item.getReason()));
+
+        HBox row = new HBox(12,
+                Widgets.tag(item.getSafety().label, "danger"),
+                struck,
+                Widgets.sub(item.getAlternative() == null ? "" : "대체 — " + item.getAlternative()),
+                Widgets.hSpacer(),
+                why);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("blocked-row");
+        return row;
+    }
+
+    // ── 내비게이션 ──────────────────────────────────────────────
 
     @FXML
     private void handleProfile() {
@@ -177,12 +253,13 @@ public class MainController {
 
     @FXML
     private void handleLogout() {
-        AppNav.show("로그인", "login.fxml");
+        com.safefood.dto.Session.setCurrentUser(null);
+        GroupSession.get().setGuest(false);
+        AppNav.show("SafeFood 로그인", "login.fxml");
     }
 
     @FXML
     private void handleReroll() {
-
         fillCards();
     }
 
