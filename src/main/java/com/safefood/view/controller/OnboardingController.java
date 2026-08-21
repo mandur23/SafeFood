@@ -1,5 +1,6 @@
 package com.safefood.view.controller;
 
+import com.safefood.dto.UserDto;
 import com.safefood.view.AppNav;
 import com.safefood.view.DemoData;
 import com.safefood.view.Widgets;
@@ -184,7 +185,12 @@ public class OnboardingController {
             return;
         }
         save();
-        AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
+        UserDto me = com.safefood.dto.Session.getCurrentUser();
+        if (me != null && me.getId() == -1) {
+            AppNav.dialog("같이 먹기", "group-option.fxml");
+        } else {
+            AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
+        }
     }
 
     @FXML
@@ -199,7 +205,12 @@ public class OnboardingController {
     @FXML
     private void handleSkip() {
         save();
-        AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
+        UserDto me = com.safefood.dto.Session.getCurrentUser();
+        if (me != null && me.getId() == -1) {
+            AppNav.dialog("같이 먹기", "group-option.fxml");
+        } else {
+            AppNav.show("SafeFood — 맞춤 맛집 추천", "main.fxml");
+        }
     }
 
     private void renderStep() {
@@ -257,44 +268,56 @@ public class OnboardingController {
 
     /**
      * 화면의 값을 DB로 넘깁니다.
-     *
-     * <p>단계를 끝까지 밟지 않고 건너뛰어도 호출되므로, 손대지 않은 칸은 화면의 기본값
-     * (맵기 2단계 · 12,000원 · 1km) 이 그대로 저장됩니다.
      */
     private void save() {
-        // 1. 방금 가입한 아이디로 실제 회원 번호(user_id)를 DB에서 찾아오기
-        com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
-        com.safefood.dto.UserDto user = authService.getUserInfo(newUserId);
+        UserDto me = com.safefood.dto.Session.getCurrentUser();
+        boolean isGuest = (me != null && me.getId() == -1);
 
-        // 세션 로그인 상태 등록
-        com.safefood.dto.Session.setCurrentUser(user);
-        int currentUserId = user.getId();
+        int currentUserId = -1;
+        if (!isGuest) {
+            if (newUserId != null && !newUserId.isBlank()) {
+                com.safefood.service.AuthService authService = new com.safefood.service.AuthService();
+                UserDto user = authService.getUserInfo(newUserId);
+                if (user != null) {
+                    com.safefood.dto.Session.setCurrentUser(user);
+                    currentUserId = user.getId();
+                }
+            } else if (me != null) {
+                currentUserId = me.getId();
+            }
+        }
 
-        // 2. 취향 데이터 파싱
         int spicyLevel = (int) spicySlider.getValue();
 
-        // 예산: "12,000원 이하" -> 12000, "제한없음" -> 0
         String budgetStr = budgetBox.getValue();
         int priceMax = 0;
-        if (!"제한없음".equals(budgetStr)) {
+        if (budgetStr != null && !"제한없음".equals(budgetStr)) {
             priceMax = Integer.parseInt(budgetStr.replaceAll("[^0-9]", ""));
         }
 
         int maxDistance = parseDistance(selectedDistance());
         List<String> preferredCategories = Widgets.selected(categoryChips);
 
-        // 3. 알레르기 심각도 저장
-        com.safefood.service.OnboardingService onboardingService =
-                new com.safefood.service.OnboardingService();
-
-        for (Map.Entry<String, Integer> entry : severityByAllergy.entrySet()) {
-            int allergyId = DemoData.ALLERGIES.indexOf(entry.getKey()) + 1;
-            onboardingService.saveAllergy(currentUserId, allergyId, entry.getValue());
+        if (isGuest) {
+            com.safefood.dto.PreferenceDto guestPref = new com.safefood.dto.PreferenceDto(spicyLevel, 0, priceMax, maxDistance);
+            com.safefood.dto.Session.setGuestPreference(guestPref);
+            return;
         }
 
-        // 4. 취향 및 카테고리 저장
-        onboardingService.savePreferences(
-                currentUserId, spicyLevel, priceMax, maxDistance, preferredCategories);
+        if (currentUserId > 0) {
+            com.safefood.service.OnboardingService onboardingService =
+                    new com.safefood.service.OnboardingService();
+
+            for (Map.Entry<String, Integer> entry : severityByAllergy.entrySet()) {
+                int allergyId = DemoData.ALLERGIES.indexOf(entry.getKey()) + 1;
+                if (allergyId > 0) {
+                    onboardingService.saveAllergy(currentUserId, allergyId, entry.getValue());
+                }
+            }
+
+            onboardingService.savePreferences(
+                    currentUserId, spicyLevel, priceMax, maxDistance, preferredCategories);
+        }
     }
 
     private String selectedDistance() {

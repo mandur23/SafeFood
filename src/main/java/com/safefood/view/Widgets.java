@@ -182,6 +182,12 @@ public final class Widgets {
         return badge;
     }
 
+    public static Label safetyBadge(com.safefood.dto.RecommendationDto.Safety safety) {
+        Label badge = new Label(safety.label);
+        badge.getStyleClass().addAll("safety", safety.styleClass);
+        return badge;
+    }
+
     public static Label statusLabel(String type) {
         String text = switch (type) {
             case "EATEN" -> "먹음";

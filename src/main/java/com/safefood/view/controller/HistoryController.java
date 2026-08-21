@@ -1,7 +1,13 @@
 package com.safefood.view.controller;
 
+import com.safefood.dto.FavoriteDto;
+import com.safefood.dto.HistoryDto;
+import com.safefood.dto.UserDto;
+import com.safefood.network.GroupSession;
+import com.safefood.service.FavoriteService;
+import com.safefood.service.FeedbackService;
+import com.safefood.service.HistoryService;
 import com.safefood.view.AppNav;
-import com.safefood.view.DemoData;
 import com.safefood.view.Widgets;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -15,18 +21,15 @@ import javafx.scene.layout.VBox;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * 나의 기록 — 날짜로 묶은 타임라인 (리디자인 1i).
- *
- * <p>줄마다 날짜를 반복해 적던 것을 날짜 머리글 하나로 묶고, 상태 콤보 필터를 칩으로
- * 바꿨습니다. 즐겨찾기는 날짜가 없으므로 머리글 없이 같은 모양의 줄로만 그립니다.
  */
 public class HistoryController {
 
-    /** 필터 칩 — 라벨과 DemoData 의 type 값 짝. type 이 null 이면 전체. */
     private record Filter(String label, String type) {
     }
 
@@ -51,9 +54,13 @@ public class HistoryController {
     @FXML
     private void initialize() {
         if (com.safefood.dto.Session.getCurrentUser() != null) {
-            userLabel.setText(com.safefood.dto.Session.getCurrentUser().getNickname() + "님");
+            String nick = com.safefood.dto.Session.getCurrentUser().getNickname();
+            if (nick == null || nick.isBlank()) {
+                nick = com.safefood.dto.Session.getCurrentUser().getLoginId();
+            }
+            userLabel.setText((nick != null ? nick : "사용자") + "님");
         } else {
-            userLabel.setText(com.safefood.network.GroupSession.get().displayName() + "님");
+            userLabel.setText(GroupSession.get().displayName() + "님");
         }
 
         buildTabs();
@@ -71,12 +78,12 @@ public class HistoryController {
 
         tabGroup.selectedToggleProperty().addListener((observable, before, after) -> {
             if (after == null) {
-                tabGroup.selectToggle(before);   // 한 쪽은 늘 켜져 있어야 합니다
+                tabGroup.selectToggle(before);
                 return;
             }
-            showingHistory = after == history;
+            showingHistory = (after == history);
             filterRow.setVisible(showingHistory);
-            filterRow.setManaged(showingHistory);   // 즐겨찾기에는 상태 필터가 없습니다
+            filterRow.setManaged(showingHistory);
             render();
         });
     }
@@ -114,21 +121,26 @@ public class HistoryController {
 
     private void renderHistory() {
         String wanted = selectedType();
+        UserDto me = com.safefood.dto.Session.getCurrentUser();
+
+        List<HistoryDto> allHistories = (me != null && me.getId() != -1)
+                ? new HistoryService().getHistories(me.getId())
+                : new ArrayList<>();
+
         String lastDate = null;
         int shown = 0;
 
-        for (DemoData.HistoryRow row : DemoData.HISTORY) {
-            if (wanted != null && !wanted.equals(row.type())) {
+        for (HistoryDto row : allHistories) {
+            if (wanted != null && !wanted.equals(row.getType())) {
                 continue;
             }
-            // 날짜가 바뀌는 지점에서만 머리글을 답니다 — 같은 날은 한 번만
-            if (!row.date().equals(lastDate)) {
-                lastDate = row.date();
-                Label header = Widgets.label(formatDate(row.date()), "timeline-date");
+            if (row.getDate() != null && !row.getDate().equals(lastDate)) {
+                lastDate = row.getDate();
+                Label header = Widgets.label(formatDate(row.getDate()), "timeline-date");
                 VBox.setMargin(header, new javafx.geometry.Insets(shown == 0 ? 4 : 12, 0, 2, 6));
                 timelineBox.getChildren().add(header);
             }
-            timelineBox.getChildren().add(historyRow(row));
+            timelineBox.getChildren().add(historyRow(row, me));
             shown++;
         }
 
@@ -137,56 +149,87 @@ public class HistoryController {
         }
     }
 
-    private HBox historyRow(DemoData.HistoryRow row) {
-        Label menu = new Label(row.menu());
-        menu.getStyleClass().add("BLOCKED".equals(row.type()) ? "strike" : "section-title");
+    private HBox historyRow(HistoryDto row, UserDto me) {
+        Label menu = new Label(row.getMenu());
+        menu.getStyleClass().add("BLOCKED".equals(row.getType()) ? "strike" : "section-title");
 
         HBox line = new HBox(12,
-                Widgets.statusLabel(row.type()),
+                Widgets.statusLabel(row.getType()),
                 menu,
-                Widgets.sub(row.restaurant()),
+                Widgets.sub(row.getRestaurant()),
                 Widgets.hSpacer(),
-                Widgets.sub(row.note()));
+                Widgets.sub(row.getNote() != null ? row.getNote() : ""));
         line.setAlignment(Pos.CENTER_LEFT);
         line.getStyleClass().addAll("card", "soft");
         line.setPadding(new javafx.geometry.Insets(13, 18, 13, 18));
 
-        if ("EATEN".equals(row.type())) {
-            Button rate = new Button("평가하기");
+        if ("EATEN".equals(row.getType())) {
+            boolean rated = row.getFeedbackId() > 0;
+            Button rate = new Button(rated ? "평가완료" : "평가하기");
             rate.getStyleClass().add("ghost-quiet");
-            rate.setOnAction(event ->
-                    AppNav.info("좋아요 / 만족도 1~5점을 입력받는 자리입니다. (H-04)"));
+            rate.setDisable(rated);
+            rate.setOnAction(event -> {
+                if (me == null || me.getId() == -1) {
+                    AppNav.warn("게스트는 평가할 수 없습니다.");
+                    return;
+                }
+                List<Integer> choices = List.of(5, 4, 3, 2, 1);
+                javafx.scene.control.ChoiceDialog<Integer> dialog =
+                        new javafx.scene.control.ChoiceDialog<>(5, choices);
+                dialog.setTitle("식사 평가");
+                dialog.setHeaderText(row.getMenu() + "은(는) 어떠셨나요?");
+                dialog.setContentText("별점을 선택해주세요 (1~5점):");
+                dialog.showAndWait().ifPresent(rating -> {
+                    boolean ok = new FeedbackService()
+                            .saveFeedback(me.getId(), row.getHistoryId(), row.getMenuId(), rating);
+                    if (ok) {
+                        AppNav.info("평가가 저장되었습니다!\n(앞으로 추천 알고리즘 가중치에 반영됩니다)");
+                        rate.setDisable(true);
+                        rate.setText("평가완료");
+                    } else {
+                        AppNav.error("평가 저장에 실패했습니다.");
+                    }
+                });
+            });
             line.getChildren().add(rate);
         }
         return line;
     }
 
     private void renderFavorites() {
-        if (DemoData.FAVORITES.isEmpty()) {
+        UserDto me = com.safefood.dto.Session.getCurrentUser();
+        List<FavoriteDto> favs = (me != null && me.getId() != -1)
+                ? new FavoriteService().getFavorites(me.getId())
+                : new ArrayList<>();
+
+        if (favs.isEmpty()) {
             timelineBox.getChildren().add(Widgets.sub("찜한 가게가 없습니다."));
             return;
         }
-        for (DemoData.FavoriteRow row : DemoData.FAVORITES) {
+        for (FavoriteDto row : favs) {
             timelineBox.getChildren().add(favoriteRow(row));
         }
     }
 
-    private HBox favoriteRow(DemoData.FavoriteRow row) {
+    private HBox favoriteRow(FavoriteDto row) {
         Button remove = new Button("♥ 찜 취소");
         remove.getStyleClass().add("ghost-quiet");
 
         HBox line = new HBox(12,
                 Widgets.tag("찜", "accent"),
-                Widgets.label(row.restaurant(), "section-title"),
-                Widgets.sub(row.menu()),
+                Widgets.label(row.getRestaurant(), "section-title"),
+                Widgets.sub(row.getMenu()),
                 Widgets.hSpacer(),
-                Widgets.sub("★ " + row.rating() + " · 리뷰 " + row.reviewCount()),
+                Widgets.sub("★ " + row.getRating() + " · 리뷰 " + row.getReviewCount()),
                 remove);
         line.setAlignment(Pos.CENTER_LEFT);
         line.getStyleClass().addAll("card", "soft");
         line.setPadding(new javafx.geometry.Insets(13, 18, 13, 18));
 
-        remove.setOnAction(event -> timelineBox.getChildren().remove(line));
+        remove.setOnAction(event -> {
+            new FavoriteService().removeFavorite(row.getFavoriteId());
+            timelineBox.getChildren().remove(line);
+        });
         return line;
     }
 
@@ -220,11 +263,13 @@ public class HistoryController {
 
     @FXML
     private void handleGroup() {
-        AppNav.dialog("같이 먹기", "group-option.fxml");
+        AppNav.dialog("같이 먹기 옵션 선택", "group-option.fxml");
     }
 
     @FXML
     private void handleLogout() {
-        AppNav.show("로그인", "login.fxml");
+        com.safefood.dto.Session.setCurrentUser(null);
+        GroupSession.get().setGuest(false);
+        AppNav.show("SafeFood 로그인", "login.fxml");
     }
 }

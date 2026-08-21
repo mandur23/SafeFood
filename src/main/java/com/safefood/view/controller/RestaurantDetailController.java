@@ -45,6 +45,22 @@ public class RestaurantDetailController {
                 + " · " + item.distance());
     }
 
+    public void setItem(com.safefood.dto.RecommendationDto item) {
+        restaurantName.setText(item.getRestaurant());
+        menuName.setText(item.getMenu());
+        reasonLabel.setText(item.getReason());
+
+        if (item.getSafety() != null) {
+            safetyTag.setText(item.getSafety().label);
+            safetyTag.getStyleClass().removeAll("safe", "possible", "contains");
+            safetyTag.getStyleClass().add(item.getSafety().styleClass);
+        }
+
+        String hours = item.getHours() != null ? item.getHours() : "";
+        String address = item.getAddress() != null ? item.getAddress() : "";
+        metaLabel.setText(address + " · 영업 " + hours + " · ★ " + item.getRating());
+    }
+
     @FXML
     private void handleRoute() {
         AppNav.info("외부 지도 앱으로 연결하는 기능입니다. (3차 구현 예정)");
